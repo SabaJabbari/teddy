@@ -513,10 +513,6 @@ export default function App() {
           </div>
         </div>
       )}
-      <div className='small' style={{ marginTop: 8 }}>
-        <b>Modelle:</b> Lege zusätzliche <code>.glb</code>-Animationen unter <code>frontend/public/models/</code> ab
-        und ergänze sie im Array <code>MODEL_VARIANTS</code>.
-      </div>
     </>
   )
 
