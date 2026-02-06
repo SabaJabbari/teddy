@@ -811,7 +811,6 @@ export default function App() {
           />
           <div className='avatarControls'>
             <button className='avatarBtn' aria-label='Avatar verkleinern' onClick={() => changeAvatarScale(-0.05)}>−</button>
-            <span className='avatarScaleLabel'>{Math.round((avatarScale || 1) * 100)}%</span>
             <button className='avatarBtn' aria-label='Avatar vergrößern' onClick={() => changeAvatarScale(0.05)}>+</button>
           </div>
         </div>
