@@ -49,9 +49,7 @@
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
-.chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;align-items:flex-end;z-index:50;background:transparent}
-.chatSheet{border-radius:18px 18px 0 0}
-.chatSheetHandle{width:44px;height:5px;border-radius:999px;background:rgba(255,255,255,0.35);margin:0 auto 10px auto}
+.chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 20px;justify-content:center}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:18px 20px;border-radius:22px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:14px;height:clamp(210px,30vh,300px)}
 .chatBusy{border:1px solid rgba(96,165,250,0.45)}
 .chatLoading{font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:.2px;margin:-4px 0 2px}
@@ -80,7 +78,14 @@
     background:rgba(15,23,42,0.35);
     backdrop-filter:blur(8px);
   }
-  .chatWrap{justify-content:center}
+  .chatWrap{
+    position:relative;
+    top:auto;
+    right:auto;
+    left:auto;
+    margin:12px 16px 24px;
+    justify-content:center;
+  }
   .chat{
     width:100%;
   }
