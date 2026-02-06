@@ -528,8 +528,8 @@ export default function App() {
   )
 
   const mobilePanel = (
-    <div className='mobilePanelOverlay' onClick={() => setShowSettingsPanel(false)}>
-      <div className='panel panelMobile' onClick={(e) => e.stopPropagation()}>
+    <div className='mobilePanelOverlay mobilePanelFullscreen' onClick={() => setShowSettingsPanel(false)}>
+      <div className='panel panelMobile panelFullscreen' onClick={(e) => e.stopPropagation()}>
         <div className='panelHeader'>
           <h2>Einstellung</h2>
           <button className='btn' onClick={() => setShowSettingsPanel(false)}>Schließen</button>
