@@ -284,6 +284,14 @@ export default function Onboarding({ onComplete }) {
       {step === 0 && (
         <div className="card" style={heroCardStyle}>
           <h2 style={headingStyle}>Ein kleiner Teddy‑Moment</h2>
+          <div style={{ display: "flex", justifyContent: "center", margin: "8px 0 12px" }}>
+            <img
+              src={QUESTION_TEDDY_SRC}
+              alt="Teddy winkt"
+              style={isMobile ? greetingImageMobileStyle : greetingImageStyle}
+              loading="lazy"
+            />
+          </div>
           <p style={{ fontSize: 15, lineHeight: 1.45, color: "#374151" }}>
             Coco legt schon mal sein Kuschelkissen bereit und summt leise vor sich hin.
             Moechtest du ihm ein paar sanfte Stichwoerter geben, damit er sich auf dich einstimmen kann?
