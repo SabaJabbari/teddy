@@ -7,6 +7,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import crypto from 'crypto'
 import { Pool } from 'pg'
+import nodemailer from 'nodemailer'
 
 const app = express()
 const PORT = process.env.PORT || 8787
@@ -22,6 +23,14 @@ const AUTH_SECRET = process.env.AUTH_SECRET || crypto.randomBytes(32).toString('
 const TOKEN_TTL_MS = Number(process.env.AUTH_TOKEN_TTL_MS || 1000 * 60 * 60 * 24 * 7)
 const DATABASE_URL = process.env.DATABASE_URL || ''
 const PGSSL_MODE = process.env.PGSSLMODE || ''
+const APP_URL = process.env.APP_URL || ''
+const SMTP_HOST = process.env.SMTP_HOST || ''
+const SMTP_PORT = Number(process.env.SMTP_PORT || 587)
+const SMTP_USER = process.env.SMTP_USER || ''
+const SMTP_PASS = process.env.SMTP_PASS || ''
+const SMTP_FROM = process.env.SMTP_FROM || ''
+const SMTP_SECURE = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true'
+const LOG_REQUESTS = String(process.env.LOG_REQUESTS || 'true').toLowerCase() !== 'false'
 
 app.use(cors({
   origin(origin, callback) {
@@ -35,6 +44,7 @@ app.use(express.json({ limit: '1mb' }))
 const buckets = new Map()
 const authBuckets = new Map()
 const authEmailBuckets = new Map()
+const resetTokens = new Map()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const dataDir = path.join(__dirname, 'data')
@@ -48,6 +58,39 @@ const dbConfig = DATABASE_URL
     }
   : null
 const pool = dbConfig ? new Pool(dbConfig) : null
+
+app.use((req, res, next) => {
+  const id = crypto.randomBytes(6).toString('hex')
+  req.requestId = id
+  res.setHeader('x-request-id', id)
+  if (!LOG_REQUESTS) return next()
+  const start = Date.now()
+  res.on('finish', () => {
+    const durationMs = Date.now() - start
+    const entry = {
+      ts: new Date().toISOString(),
+      id,
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      durationMs
+    }
+    console.log(JSON.stringify(entry))
+  })
+  next()
+})
+
+app.get('/health', async (req, res) => {
+  try {
+    if (pool) {
+      await pool.query('SELECT 1')
+    }
+    res.json({ ok: true, uptime: Math.round(process.uptime()), db: pool ? 'ok' : 'disabled' })
+  } catch (err) {
+    console.error('health error', err)
+    res.status(503).json({ ok: false, uptime: Math.round(process.uptime()), db: 'error' })
+  }
+})
 
 async function readUsersFile() {
   try {
@@ -79,6 +122,16 @@ async function ensureDb() {
       salt text NOT NULL,
       password_hash text NOT NULL,
       hash_algo text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    );
+  `)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id bigserial PRIMARY KEY,
+      user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token_hash text NOT NULL UNIQUE,
+      expires_at timestamptz NOT NULL,
+      used_at timestamptz,
       created_at timestamptz NOT NULL DEFAULT now()
     );
   `)
@@ -176,6 +229,10 @@ function base64UrlEncode(value) {
   return Buffer.from(value).toString('base64url')
 }
 
+function hashToken(value) {
+  return crypto.createHash('sha256').update(String(value)).digest('hex')
+}
+
 function issueToken(userId) {
   const now = Math.floor(Date.now() / 1000)
   const exp = Math.floor((Date.now() + TOKEN_TTL_MS) / 1000)
@@ -216,6 +273,53 @@ function normalizeEmail(value = '') {
 
 function isValidEmail(value = '') {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim())
+}
+
+function getAppUrl(req) {
+  if (APP_URL) return APP_URL.replace(/\/+$/, '')
+  const origin = req?.headers?.origin
+  if (origin) return String(origin).replace(/\/+$/, '')
+  return ORIGINS[0] || 'http://localhost:5173'
+}
+
+function getMailer() {
+  if (!SMTP_HOST || !SMTP_FROM) return null
+  return nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
+    auth: SMTP_USER ? { user: SMTP_USER, pass: SMTP_PASS } : undefined
+  })
+}
+
+async function storeResetToken(userId, tokenHash, expiresAt) {
+  if (pool) {
+    await pool.query(
+      'INSERT INTO password_resets (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+      [userId, tokenHash, expiresAt]
+    )
+    return
+  }
+  resetTokens.set(tokenHash, { userId, expiresAt, usedAt: null })
+}
+
+async function consumeResetToken(tokenHash) {
+  if (pool) {
+    const { rows } = await pool.query(
+      `UPDATE password_resets
+       SET used_at = now()
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()
+       RETURNING user_id`,
+      [tokenHash]
+    )
+    return rows[0]?.user_id || null
+  }
+  const entry = resetTokens.get(tokenHash)
+  if (!entry) return null
+  if (entry.usedAt || Date.now() > entry.expiresAt) return null
+  entry.usedAt = Date.now()
+  resetTokens.set(tokenHash, entry)
+  return entry.userId
 }
 app.use((req,res,next)=>{
   if (req.path && req.path.startsWith('/api/tts')) return next()
@@ -396,6 +500,67 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (err) {
     console.error('login error', err)
     res.status(500).json({ error: 'Login fehlgeschlagen.' })
+  }
+})
+
+app.post('/api/auth/forgot', async (req, res) => {
+  const { email = '' } = req.body || {}
+  const ip = req.ip || req.headers['x-forwarded-for'] || 'local'
+  const cleanEmail = normalizeEmail(email)
+  if (!rateLimit(authBuckets, `forgot:${ip}`, 6, 10 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Zu viele Versuche. Bitte später erneut versuchen.' })
+  }
+  if (!rateLimit(authEmailBuckets, `forgot:${cleanEmail}`, 4, 60 * 60 * 1000)) {
+    return res.status(429).json({ error: 'Zu viele Versuche für diese E-Mail. Bitte später erneut versuchen.' })
+  }
+  if (!cleanEmail || !isValidEmail(cleanEmail)) {
+    return res.status(200).json({ ok: true })
+  }
+  try {
+    const user = await getUserByEmail(cleanEmail)
+    if (!user) return res.status(200).json({ ok: true })
+    const rawToken = crypto.randomBytes(32).toString('hex')
+    const tokenHash = hashToken(rawToken)
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 30)
+    await storeResetToken(user.id, tokenHash, expiresAt)
+    const appUrl = getAppUrl(req)
+    const resetLink = `${appUrl}/reset-password?token=${rawToken}`
+    const mailer = getMailer()
+    if (mailer) {
+      await mailer.sendMail({
+        from: SMTP_FROM,
+        to: user.email,
+        subject: 'Passwort zuruecksetzen',
+        text: `Hallo ${user.name || ''},\n\nKlicke auf den Link, um dein Passwort zurueckzusetzen:\n${resetLink}\n\nDer Link ist 30 Minuten gueltig.\n`,
+      })
+    } else {
+      console.log('Password reset link (no SMTP configured):', resetLink)
+    }
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('forgot error', err)
+    res.status(500).json({ error: 'Anfrage fehlgeschlagen.' })
+  }
+})
+
+app.post('/api/auth/reset', async (req, res) => {
+  const { token = '', password = '' } = req.body || {}
+  const cleanToken = String(token).trim()
+  const cleanPassword = String(password)
+  if (!cleanToken || cleanPassword.length < 6) {
+    return res.status(400).json({ error: 'Token und neues Passwort erforderlich.' })
+  }
+  try {
+    const tokenHash = hashToken(cleanToken)
+    const userId = await consumeResetToken(tokenHash)
+    if (!userId) return res.status(400).json({ error: 'Token ist ungueltig oder abgelaufen.' })
+    const newSalt = crypto.randomBytes(16).toString('hex')
+    const newHash = hashPassword(cleanPassword, newSalt)
+    await updateUserAuth(userId, newSalt, newHash, 'scrypt-v1')
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('reset error', err)
+    res.status(500).json({ error: 'Passwort konnte nicht geaendert werden.' })
   }
 })
 

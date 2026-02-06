@@ -36,10 +36,17 @@ const resolvedBase = (() => {
 })()
 const apiUrl = (path) => (resolvedBase ? `${resolvedBase}${path}` : path)
 
-function Selector({ label, list, index, setIndex }) {
+function Selector({ label, list, index, setIndex, hint }) {
   return (
     <div className='row'>
-      <span className='label'>{label}</span>
+      <span className='label'>
+        {label}
+        {hint && (
+          <button type='button' className='tooltipIcon' title={hint} aria-label={`${label} Info`}>
+            i
+          </button>
+        )}
+      </span>
       <div className='selector'>
         <button className='btn' onClick={() => setIndex((i) => (i - 1 + list.length) % list.length)}>&lt;</button>
         <div className='value'>{list[index]}</div>
@@ -86,6 +93,19 @@ export default function App() {
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' })
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotMsg, setForgotMsg] = useState('')
+  const [forgotError, setForgotError] = useState('')
+  const [resetToken, setResetToken] = useState('')
+  const [resetPassword, setResetPassword] = useState('')
+  const [resetConfirm, setResetConfirm] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetError, setResetError] = useState('')
+  const [resetSuccess, setResetSuccess] = useState(false)
+  const [showIntroScreen, setShowIntroScreen] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try { return localStorage.getItem('coco_intro_seen') !== '1' } catch { return true }
+  })
 
   // Chat
   const [chatInput, setChatInput] = useState('')
@@ -111,6 +131,13 @@ export default function App() {
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.location.pathname !== '/reset-password') return
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token') || ''
+    setResetToken(token)
   }, [])
 
   useEffect(() => {
@@ -360,6 +387,14 @@ export default function App() {
     setVoiceError('ElevenLabs ist nicht konfiguriert.')
     return false
   }, [ttsAvailable, playElevenVoice])
+  const formatAuthError = useCallback((status, data) => {
+    if (data?.error) return data.error
+    if (status === 429) return 'Zu viele Versuche. Bitte in ein paar Minuten erneut versuchen.'
+    if (status === 401) return 'Ungültige Zugangsdaten.'
+    if (status === 400) return 'Bitte prüfe deine Eingaben.'
+    if (status >= 500) return 'Serverfehler. Bitte später erneut versuchen.'
+    return 'Anmeldung fehlgeschlagen.'
+  }, [])
   const handleAuthSubmit = useCallback(async (mode = 'login') => {
     if (authLoading) return
     setAuthLoading(true)
@@ -374,19 +409,56 @@ export default function App() {
         body: JSON.stringify(payload)
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data?.error || 'Fehler beim Anmelden')
+      if (!res.ok) throw new Error(formatAuthError(res.status, data))
       if (!data?.user) throw new Error('Antwort ungültig')
       storeUser(data)
       setAuthForm({ name: '', email: '', password: '' })
     } catch (err) {
-      setAuthError(err.message || 'Anmeldung fehlgeschlagen')
+      const msg = String(err?.message || '')
+      if (/failed to fetch|networkerror|fetch/i.test(msg)) {
+        setAuthError('Server nicht erreichbar. Bitte prüfe deine Verbindung oder versuche es später.')
+      } else {
+        setAuthError(err.message || 'Anmeldung fehlgeschlagen')
+      }
     } finally {
       setAuthLoading(false)
     }
-  }, [authLoading, authForm, storeUser])
+  }, [authLoading, authForm, storeUser, formatAuthError])
+  const handleForgot = useCallback(async () => {
+    if (forgotLoading) return
+    setForgotError('')
+    setForgotMsg('')
+    const email = authForm.email.trim()
+    if (!email) {
+      setForgotError('Bitte zuerst eine E-Mail eingeben.')
+      return
+    }
+    setForgotLoading(true)
+    try {
+      const res = await fetch(apiUrl('/api/auth/forgot'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || 'Anfrage fehlgeschlagen.')
+      setForgotMsg('Wenn ein Konto existiert, senden wir einen Link per E-Mail.')
+    } catch (err) {
+      const msg = String(err?.message || 'Anfrage fehlgeschlagen.')
+      setForgotError(msg)
+    } finally {
+      setForgotLoading(false)
+    }
+  }, [forgotLoading, authForm])
   const logout = useCallback(() => {
     storeUser(null)
   }, [storeUser])
+  const dismissIntro = useCallback(() => {
+    setShowIntroScreen(false)
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('coco_intro_seen', '1') } catch {}
+    }
+  }, [])
   const currentModelUrl = MODEL_VARIANTS[modelIdx]?.url || MODEL_VARIANTS[0].url
   const isIntroAnimationActive = !introPlayed && /waving/i.test(currentModelUrl || '')
 
@@ -404,10 +476,28 @@ export default function App() {
 
   const panelFields = (
     <>
-      <Selector label='Sprachstil' list={STYLES} index={styleIdx} setIndex={setStyleIdx} />
+      <Selector
+        label='Sprachstil'
+        list={STYLES}
+        index={styleIdx}
+        setIndex={setStyleIdx}
+        hint='Bestimmt Tonfall und Anrede in den Antworten.'
+      />
       <div className='small' style={{ marginTop: -4, marginBottom: 6 }}>{STYLE_DESCRIPTIONS[styleIdx]}</div>
-      <Selector label='Hintergrund' list={BACKGROUNDS} index={bgIdx} setIndex={setBgIdx} />
-      <Selector label='Musik' list={MUSIC} index={musicIdx} setIndex={setMusicIdx} />
+      <Selector
+        label='Hintergrund'
+        list={BACKGROUNDS}
+        index={bgIdx}
+        setIndex={setBgIdx}
+        hint='Aendert die Stimmung der Szene.'
+      />
+      <Selector
+        label='Musik'
+        list={MUSIC}
+        index={musicIdx}
+        setIndex={setMusicIdx}
+        hint='Leise Hintergrundmusik passend zur Stimmung.'
+      />
       <div className='row' style={{ marginTop: 8, flexWrap: 'wrap' }}>
         <button className='btn' onClick={applySettings}>Einstellungen anwenden</button>
         <button className='btn' onClick={toggleMusic}>
@@ -463,12 +553,12 @@ export default function App() {
           <button
             type='button'
             className={authMode === 'login' ? 'active' : ''}
-            onClick={() => { setAuthMode('login'); setAuthError('') }}
+            onClick={() => { setAuthMode('login'); setAuthError(''); setForgotError(''); setForgotMsg('') }}
           >Anmelden</button>
           <button
             type='button'
             className={authMode === 'register' ? 'active' : ''}
-            onClick={() => { setAuthMode('register'); setAuthError('') }}
+            onClick={() => { setAuthMode('register'); setAuthError(''); setForgotError(''); setForgotMsg('') }}
           >Registrieren</button>
         </div>
         <form
@@ -511,12 +601,130 @@ export default function App() {
               minLength={6}
             />
           </label>
+          {authMode === 'login' && (
+            <button
+              type='button'
+              className='btn btnGhost'
+              onClick={handleForgot}
+              disabled={forgotLoading}
+            >
+              {forgotLoading ? 'Bitte warten…' : 'Passwort vergessen'}
+            </button>
+          )}
+          {forgotError && <div className='authError'>{forgotError}</div>}
+          {forgotMsg && <div className='authSuccess'>{forgotMsg}</div>}
           {authError && <div className='authError'>{authError}</div>}
           <button className='btn btnPrimary' type='submit' disabled={authLoading}>
             {authLoading ? 'Bitte warten…' : authMode === 'login' ? 'Anmelden' : 'Registrieren'}
           </button>
           <button type='button' className='btn btnGhost' onClick={() => storeUser({ guest: true })}>Vielleicht später</button>
         </form>
+      </div>
+    </div>
+  )
+
+  const resetView = (
+    <div className='authScreen'>
+      <div className='authCard'>
+        <h2>Passwort zuruecksetzen</h2>
+        <p className='small' style={{ color: '#475569' }}>
+          Bitte gib dein neues Passwort ein.
+        </p>
+        <form
+          className='authForm'
+          onSubmit={async (e) => {
+            e.preventDefault()
+            if (resetLoading) return
+            setResetError('')
+            if (!resetToken) {
+              setResetError('Token fehlt. Bitte pruefe den Link.')
+              return
+            }
+            if (resetPassword.length < 6) {
+              setResetError('Passwort muss mindestens 6 Zeichen haben.')
+              return
+            }
+            if (resetPassword !== resetConfirm) {
+              setResetError('Passwoerter stimmen nicht ueberein.')
+              return
+            }
+            setResetLoading(true)
+            try {
+              const res = await fetch(apiUrl('/api/auth/reset'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: resetToken, password: resetPassword })
+              })
+              const data = await res.json().catch(() => ({}))
+              if (!res.ok) throw new Error(data?.error || 'Reset fehlgeschlagen.')
+              setResetSuccess(true)
+            } catch (err) {
+              const msg = String(err?.message || 'Reset fehlgeschlagen.')
+              setResetError(msg)
+            } finally {
+              setResetLoading(false)
+            }
+          }}
+        >
+          <label>
+            <span>Neues Passwort</span>
+            <input
+              type='password'
+              value={resetPassword}
+              onChange={(e) => setResetPassword(e.target.value)}
+              placeholder='mind. 6 Zeichen'
+              required
+              minLength={6}
+              disabled={resetLoading || resetSuccess}
+            />
+          </label>
+          <label>
+            <span>Passwort bestaetigen</span>
+            <input
+              type='password'
+              value={resetConfirm}
+              onChange={(e) => setResetConfirm(e.target.value)}
+              placeholder='Passwort erneut eingeben'
+              required
+              minLength={6}
+              disabled={resetLoading || resetSuccess}
+            />
+          </label>
+          {resetError && <div className='authError'>{resetError}</div>}
+          {resetSuccess && (
+            <div className='authSuccess'>Passwort geaendert. Du kannst dich jetzt anmelden.</div>
+          )}
+          <button className='btn btnPrimary' type='submit' disabled={resetLoading || resetSuccess}>
+            {resetLoading ? 'Bitte warten…' : 'Passwort speichern'}
+          </button>
+          <button
+            type='button'
+            className='btn btnGhost'
+            onClick={() => { if (typeof window !== 'undefined') window.location.href = '/' }}
+          >
+            Zurueck zur Anmeldung
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+
+  const introView = (
+    <div className='introOverlay'>
+      <div className='introCard'>
+        <h2>Willkommen bei Coco</h2>
+        <p className='small' style={{ color: '#475569' }}>
+          Kurz und knapp: So nutzt du die App am besten.
+        </p>
+        <div className='introList'>
+          <div><b>Chatten:</b> Schreibe, was du gerade brauchst, und Coco antwortet im gewaehlten Stil.</div>
+          <div><b>Stil anpassen:</b> Wechsel zwischen Formell, Informell, Humorvoll sowie Hintergrund und Musik.</div>
+          <div><b>Tools:</b> Starte eine 1-Min-Atemuebung oder lass dir Antworten vorlesen.</div>
+        </div>
+        <div className='introActions'>
+          <button className='btn btnPrimary' onClick={dismissIntro}>Los geht's</button>
+          <button className='btn btnGhost' onClick={dismissIntro}>Spaeter</button>
+        </div>
       </div>
     </div>
   )
@@ -557,12 +765,17 @@ export default function App() {
     )
   }
 
+  if (typeof window !== 'undefined' && window.location.pathname === '/reset-password') {
+    return resetView
+  }
+
   if (!user) {
     return authView
   }
 
   return (
     <div className={`app ${bgClass}`} style={isMobile ? { minHeight: "100vh" } : undefined}>
+      {showIntroScreen && introView}
       <div className='header'>
         <span>Coco – App</span>
         <div className='userBadge'>
@@ -608,7 +821,7 @@ export default function App() {
         </div>
 
         <div className={`chatWrap ${isMobile ? 'chatWrapMobile' : ''}`}>
-          <div className='chat'>
+          <div className={`chat ${busy ? 'chatBusy' : ''}`}>
             <div className='chatHistory'>
               {chat.map((m, i) => (
                 <div key={i} className={'msg ' + (m.role === 'user' ? 'user' : 'bot')}>
@@ -617,14 +830,22 @@ export default function App() {
                 </div>
               ))}
             </div>
+            {busy && (
+              <div className='chatLoading' aria-live='polite'>
+                Coco tippt<span className='dot'>.</span><span className='dot'>.</span><span className='dot'>.</span>
+              </div>
+            )}
             <div className='chatRow'>
               <input
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 placeholder='Nachricht schreiben…'
                 onKeyDown={(e) => e.key === 'Enter' && !busy && sendChat()}
+                disabled={busy}
               />
-              <button className='btn' disabled={busy} onClick={sendChat}>Senden</button>
+              <button className='btn' disabled={busy || !chatInput.trim()} onClick={sendChat}>
+                {busy ? 'Senden…' : 'Senden'}
+              </button>
             </div>
           </div>
         </div>

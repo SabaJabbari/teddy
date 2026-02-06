@@ -20,6 +20,8 @@
 .panelHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
 .panel h2{margin:0;font-size:18px}.row{display:flex;gap:10px;align-items:stretch;margin:8px 0;flex-wrap:nowrap}
 .label{min-width:120px;font-weight:600}.selector{display:flex;align-items:center;gap:8px}.selector .value{min-width:160px;text-align:center;padding:6px 10px;background:rgba(255,255,255,.08);border-radius:10px}
+.tooltipIcon{margin-left:6px;width:18px;height:18px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:12px;line-height:16px;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:help}
+.tooltipIcon:hover{background:rgba(255,255,255,.2)}
 .btn{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--text);font-weight:700;cursor:pointer}.btn:hover{background:rgba(255,255,255,.12)}
 .btnPrimary{background:linear-gradient(90deg,#c4b5fd,#60a5fa);border:1px solid rgba(148,163,184,0.4);color:#0f172a;width:100%;text-align:center}.btnPrimary:hover{filter:brightness(0.98)}
 .row .btn{flex:1;width:auto}
@@ -29,6 +31,12 @@
 .btnPrimary.settingsToggle{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;padding:12px 16px;border-radius:18px;background:linear-gradient(120deg,#2563eb,#3b82f6)}
 .btnPrimary.settingsToggle::before{content:'⚙';font-size:16px}
 .small{font-size:12px;opacity:.9}.rightDock{position:absolute;right:16px;top:16px;width:420px;max-height:74vh;overflow:auto;background:var(--panel);padding:12px;border-radius:16px;z-index:4}
+.introOverlay{position:fixed;inset:0;background:rgba(7,10,20,0.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:60}
+.introCard{width:min(520px,92vw);background:#ffffff;color:#0f172a;border-radius:18px;border:1px solid rgba(15,23,42,0.08);box-shadow:0 24px 60px rgba(15,23,42,0.25);padding:22px}
+.introCard h2{margin:0 0 6px 0}
+.introList{display:flex;flex-direction:column;gap:10px;font-size:14px;color:#1f2937;margin:12px 0 18px}
+.introActions{display:flex;gap:10px;flex-wrap:wrap}
+.introActions .btn{flex:1;min-width:140px}
 .logline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:12px;opacity:.9}.canvasWrap{position:absolute;inset:0;height:100%;min-height:100%}
 .avatarControls{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;background:rgba(15,23,42,0.65);padding:10px 14px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,0.35);z-index:5}
 .avatarBtn{width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:18px;line-height:1;cursor:pointer}
@@ -37,6 +45,12 @@
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
 .chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 20px;justify-content:center}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:16px 18px;border-radius:20px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:12px;height:clamp(200px,28vh,280px)}
+.chatBusy{border:1px solid rgba(96,165,250,0.45)}
+.chatLoading{font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:.2px;margin:-4px 0 2px}
+.chatLoading .dot{display:inline-block;animation:chatDot 1.2s infinite}
+.chatLoading .dot:nth-child(2){animation-delay:.2s}
+.chatLoading .dot:nth-child(3){animation-delay:.4s}
+@keyframes chatDot{0%,80%,100%{opacity:.2}40%{opacity:1}}
 .chatHistory{flex:1;min-height:0;overflow-y:auto;padding-right:4px;font-size:15px;line-height:1.4}
 .chatHistory .msg{margin-bottom:8px}
 .chat::before{content:'';position:absolute;left:-18px;top:40px;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-right:18px solid var(--panel);filter:drop-shadow(-2px 2px 3px rgba(5,8,20,.35))}
@@ -49,6 +63,13 @@
     height:auto;
     min-height:100vh;
     padding-top:90px;
+  }
+  .header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:rgba(15,23,42,0.35);
+    backdrop-filter:blur(8px);
   }
   .chatWrap{
     position:relative;
@@ -77,11 +98,14 @@
     margin:16px;
   }
 }
-.scene{padding-bottom:120px}
+.scene{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 @media (max-width: 768px){
-  .scene{padding-top:16px;padding-bottom:60px}
+  .scene{padding-top:16px;padding-bottom:calc(60px + env(safe-area-inset-bottom))}
   .canvasWrap{position:relative;height:100%}
   .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
+  .chat{height:clamp(220px,32vh,320px)}
+  .chatHistory{font-size:14px}
+  .chatRow{gap:8px}
   .chatRow{flex-direction:column}
   .chatRow input,.chatRow button{width:100%}
 }
@@ -95,6 +119,9 @@
   .chatWrap{margin:8px}
   .chat{padding:14px}
   .chat::before{left:20px;top:32px}
+  .authCard{padding:20px;border-radius:20px}
+  .authToggle{flex-direction:column}
+  .introCard{padding:18px}
 }
 
 .authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3edff;padding:24px}
@@ -108,6 +135,7 @@
 .btnGhost{background:transparent;border:1px solid rgba(196,181,253,0.5);color:#5b4ad6}
 .btnGhost:hover{background:rgba(196,181,253,0.18)}
 .authError{color:#b91c1c;font-size:14px;padding:6px 0}
+.authSuccess{color:#15803d;font-size:14px;padding:6px 0}
 .userBadge{display:flex;align-items:center;gap:8px;font-size:14px}
 .btnSmall{padding:6px 10px;font-size:13px}
 
