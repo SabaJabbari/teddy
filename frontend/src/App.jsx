@@ -809,10 +809,6 @@ export default function App() {
             playNativeOnce={isIntroAnimationActive}
             onAnimationFinished={handleIntroAnimationFinished}
           />
-          <div className='avatarControls'>
-            <button className='avatarBtn' aria-label='Avatar verkleinern' onClick={() => changeAvatarScale(-0.05)}>−</button>
-            <button className='avatarBtn' aria-label='Avatar vergrößern' onClick={() => changeAvatarScale(0.05)}>+</button>
-          </div>
         </div>
 
         <div className={`chatWrap ${isMobile ? 'chatWrapMobile' : ''}`}>
