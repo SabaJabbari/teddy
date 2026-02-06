@@ -43,7 +43,9 @@
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
-.chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 20px;justify-content:center}
+.chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;z-index:50}
+.chatSheet{border-radius:18px 18px 0 0}
+.chatSheetHandle{width:44px;height:5px;border-radius:999px;background:rgba(255,255,255,0.35);margin:0 auto 10px auto}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:16px 18px;border-radius:20px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:12px;height:clamp(200px,28vh,280px)}
 .chatBusy{border:1px solid rgba(96,165,250,0.45)}
 .chatLoading{font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:.2px;margin:-4px 0 2px}
@@ -63,6 +65,7 @@
     height:auto;
     min-height:100vh;
     padding-top:90px;
+    padding-bottom:calc(200px + env(safe-area-inset-bottom));
   }
   .header{
     position:sticky;
@@ -71,20 +74,11 @@
     background:rgba(15,23,42,0.35);
     backdrop-filter:blur(8px);
   }
-  .chatWrap{
-    position:relative;
-    top:auto;
-    right:auto;
-    left:auto;
-    margin:12px 16px 24px;
-    justify-content:center;
-  }
+  .chatWrap{justify-content:center}
   .chat{
     width:100%;
   }
-  .chat::before{
-    left:32px;
-  }
+  .chat::before{display:none}
   .panel{
     position:relative;
     width:auto;
@@ -100,10 +94,10 @@
 }
 .scene{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 @media (max-width: 768px){
-  .scene{padding-top:16px;padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+  .scene{padding-top:16px;padding-bottom:calc(200px + env(safe-area-inset-bottom))}
   .canvasWrap{position:relative;height:100%}
   .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
-  .chat{height:clamp(220px,32vh,320px)}
+  .chat{height:clamp(240px,38vh,360px)}
   .chatHistory{font-size:14px}
   .chatRow{gap:8px}
   .chatRow{flex-direction:column}

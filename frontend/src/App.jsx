@@ -812,7 +812,8 @@ export default function App() {
         </div>
 
         <div className={`chatWrap ${isMobile ? 'chatWrapMobile' : ''}`}>
-          <div className={`chat ${busy ? 'chatBusy' : ''}`}>
+          <div className={`chat ${busy ? 'chatBusy' : ''} ${isMobile ? 'chatSheet' : ''}`}>
+            {isMobile && <div className='chatSheetHandle' aria-hidden='true' />}
             <div className='chatHistory'>
               {chat.map((m, i) => (
                 <div key={i} className={'msg ' + (m.role === 'user' ? 'user' : 'bot')}>
