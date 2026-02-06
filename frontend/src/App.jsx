@@ -719,7 +719,7 @@ export default function App() {
         </div>
         <div className='introActions'>
           <button className='btn btnPrimary' onClick={dismissIntro}>Los geht's</button>
-          <button className='btn btnGhost' onClick={dismissIntro}>Spaeter</button>
+          <button className='btn btnGhost' onClick={dismissIntro}>Später</button>
         </div>
       </div>
     </div>
