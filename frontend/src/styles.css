@@ -8,6 +8,8 @@
 .app.neutral{background:linear-gradient(180deg,var(--bg-neutral-a) 0%,var(--bg-neutral-b) 100%)}.app.future{background:radial-gradient(circle at 30% 20%,var(--bg-future-a) 0%,#c084fc 45%,var(--bg-future-b) 75%,#0b1120 100%)}
 .panel{position:absolute;top:16px;left:16px;width:500px;background:var(--panel);padding:14px;border-radius:16px;box-shadow:0 18px 45px rgba(5,8,20,.45);z-index:5}
 .panel.panelMobile{position:relative;width:100%;max-width:600px;margin:0;padding:16px;border-radius:18px;box-shadow:0 18px 45px rgba(5,8,20,.45);max-height:calc(100vh - 40px);overflow:auto}
+.mobilePanelFullscreen{padding:0;align-items:stretch}
+.panelFullscreen{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;padding:18px 16px 28px}
 .mobileSettings{margin-bottom:16px;display:flex;flex-direction:column;gap:12px}
 .mobilePanelOverlay{position:fixed;inset:0;padding:24px 12px;background:rgba(5,8,20,0.55);z-index:40;display:flex;justify-content:center;align-items:flex-start}
 .panelToggle{position:absolute;top:16px;left:16px;z-index:6}
@@ -100,8 +102,9 @@
   .chat{height:clamp(240px,38vh,360px)}
   .chatHistory{font-size:14px}
   .chatRow{gap:8px}
-  .chatRow{flex-direction:column}
-  .chatRow input,.chatRow button{width:100%}
+  .chatRow{flex-direction:row;align-items:center}
+  .chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
+  .chatRow button{width:96px;height:44px}
 }
 @media (max-width: 540px){
   .row{flex-direction:column;align-items:flex-start}
@@ -116,6 +119,7 @@
   .authCard{padding:20px;border-radius:20px}
   .authToggle{flex-direction:column}
   .introCard{padding:18px}
+  .chatRow button{width:88px}
 }
 
 .authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3edff;padding:24px}
