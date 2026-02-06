@@ -283,10 +283,11 @@ export default function Onboarding({ onComplete }) {
       {/* Step 0: Startfrage */}
       {step === 0 && (
         <div className="card" style={heroCardStyle}>
-          <h2 style={headingStyle}>Bevor wir starten</h2>
+          <h2 style={headingStyle}>Ein kleiner Teddy‑Moment</h2>
           <p style={{ fontSize: 15, lineHeight: 1.45, color: "#374151" }}>
-            Möchtest du ein paar kurze Fragen beantworten, damit ich mich auf dich
-            einstellen kann? Du kannst das auch überspringen.
+            Coco legt schon mal sein Kuschelkissen bereit und summt leise vor sich hin.
+            Moechtest du ihm ein paar sanfte Stichwoerter geben, damit er sich auf dich einstimmen kann?
+            Ganz ohne Eile und jederzeit ueberspringbar.
           </p>
           <div className="onboardingNav" style={{ display: "flex", gap: 10 }}>
             <button className="btn" onClick={next} style={btnStyle}>
