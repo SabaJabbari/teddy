@@ -460,6 +460,7 @@ export default function App() {
     }
   }, [])
   const currentModelUrl = MODEL_VARIANTS[modelIdx]?.url || MODEL_VARIANTS[0].url
+  const effectiveAvatarScale = avatarScale * (isMobile ? 1.2 : 1)
   const isIntroAnimationActive = !introPlayed && /waving/i.test(currentModelUrl || '')
 
   useEffect(() => {
@@ -804,7 +805,7 @@ export default function App() {
             isWaving={isWaving}
             moveFeet={areFeetMoving}
             blinkEyes={isBlinking}
-            scaleMultiplier={avatarScale}
+            scaleMultiplier={effectiveAvatarScale}
             viewport={viewport}
             playNativeOnce={isIntroAnimationActive}
             onAnimationFinished={handleIntroAnimationFinished}
