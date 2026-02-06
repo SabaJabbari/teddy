@@ -15,8 +15,8 @@
 .mobilePanelFullscreen{padding:0;align-items:stretch}
 .panelFullscreen{width:100%;max-width:none;height:100%;max-height:none;border-radius:0;padding:18px 16px 28px}
 .mobileSettings{margin-bottom:16px;display:flex;flex-direction:column;gap:12px}
-.mobilePanelOverlay{position:fixed;inset:0;padding:24px 12px;background:rgba(5,8,20,0.55);z-index:40;display:flex;justify-content:center;align-items:flex-start}
-.panelToggle{position:absolute;top:16px;left:16px;z-index:6}
+.mobilePanelOverlay{position:fixed;inset:0;padding:24px 12px;background:rgba(5,8,20,0.55);z-index:80;display:flex;justify-content:center;align-items:flex-start}
+.panelToggle{position:absolute;top:16px;left:16px;z-index:80}
 .panelToggleMobile{top:12px;left:12px}
 .panelToggle .btn{background:var(--panel);box-shadow:0 12px 30px rgba(5,8,20,.35)}
 .panelToggleMobile .btn.btnHamburger{width:40px;height:40px;padding:8px;border-radius:50%;background:rgba(15,23,42,0.65);box-shadow:0 8px 20px rgba(0,0,0,0.35);gap:4px}
@@ -49,7 +49,7 @@
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
-.chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;align-items:flex-end;z-index:50;background:linear-gradient(180deg, rgba(11,17,32,0) 0%, rgba(11,17,32,0.65) 45%, rgba(11,17,32,0.9) 100%)}
+.chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;align-items:flex-end;z-index:50;background:linear-gradient(180deg, rgba(11,17,32,0) 0%, rgba(11,17,32,0.45) 45%, rgba(11,17,32,0.75) 100%)}
 .chatSheet{border-radius:18px 18px 0 0}
 .chatSheetHandle{width:44px;height:5px;border-radius:999px;background:rgba(255,255,255,0.35);margin:0 auto 10px auto}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:18px 20px;border-radius:22px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:14px;height:clamp(210px,30vh,300px)}
@@ -142,4 +142,4 @@
 .userBadge{display:flex;align-items:center;gap:8px;font-size:14px}
 .btnSmall{padding:6px 10px;font-size:13px}
 
-.mobilePanelOverlay{position:fixed;inset:0;padding:24px 12px;background:rgba(5,8,20,0.55);z-index:40;display:flex;justify-content:center;align-items:flex-start}
+.mobilePanelOverlay{position:fixed;inset:0;padding:24px 12px;background:rgba(5,8,20,0.55);z-index:80;display:flex;justify-content:center;align-items:flex-start}
