@@ -203,6 +203,18 @@ async function updateUserAuth(userId, salt, passwordHash, hashAlgo) {
   await writeUsersFile(users)
 }
 
+async function updateUserName(userId, name) {
+  if (pool) {
+    await pool.query('UPDATE users SET name = $1 WHERE id = $2', [name, userId])
+    return
+  }
+  const users = await readUsersFile()
+  const idx = users.findIndex((u) => u.id === userId)
+  if (idx === -1) return
+  users[idx] = { ...users[idx], name }
+  await writeUsersFile(users)
+}
+
 function hashPasswordLegacy(password, salt) {
   return crypto.createHash('sha256').update(password + salt).digest('hex')
 }
@@ -576,6 +588,25 @@ app.get('/api/auth/me', async (req, res) => {
   } catch (err) {
     console.error('auth me error', err)
     res.status(500).json({ error: 'Anfrage fehlgeschlagen.' })
+  }
+})
+
+app.patch('/api/user/profile', async (req, res) => {
+  const auth = req.headers.authorization || ''
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+  const data = verifyToken(token)
+  if (!data) return res.status(401).json({ error: 'Ungültiger oder abgelaufener Token.' })
+  const { name = '' } = req.body || {}
+  const cleanName = String(name).trim()
+  if (!cleanName || cleanName.length > 80) {
+    return res.status(400).json({ error: 'Name ist erforderlich.' })
+  }
+  try {
+    await updateUserName(data.sub, cleanName)
+    res.json({ ok: true, user: { id: data.sub, name: cleanName } })
+  } catch (err) {
+    console.error('profile update error', err)
+    res.status(500).json({ error: 'Profil konnte nicht aktualisiert werden.' })
   }
 })
 

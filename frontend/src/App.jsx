@@ -491,12 +491,24 @@ export default function App() {
   const logout = useCallback(() => {
     storeUser(null)
   }, [storeUser])
-  const saveName = useCallback(() => {
+  const saveName = useCallback(async () => {
     const next = (nameDraft || '').trim()
     if (!next) return
     const updated = { ...user, name: next }
     storeUser({ user: updated, token: user?.token })
     setEditingName(false)
+    if (user?.token) {
+      try {
+        await fetch(apiUrl('/api/user/profile'), {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.token}`
+          },
+          body: JSON.stringify({ name: next })
+        })
+      } catch {}
+    }
   }, [nameDraft, user, storeUser])
   const dismissIntro = useCallback(() => {
     setShowIntroScreen(false)
