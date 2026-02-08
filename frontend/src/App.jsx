@@ -460,7 +460,7 @@ export default function App() {
     }
   }, [])
   const currentModelUrl = MODEL_VARIANTS[modelIdx]?.url || MODEL_VARIANTS[0].url
-  const effectiveAvatarScale = avatarScale * (isMobile ? 2.1 : 1)
+  const effectiveAvatarScale = avatarScale * (isMobile ? 2.4 : 1)
   const isIntroAnimationActive = !introPlayed && /waving/i.test(currentModelUrl || '')
 
   useEffect(() => {
