@@ -813,7 +813,7 @@ export default function App() {
         <span>Coco</span>
         <div className='userBadge'>
           <span>{displayName}</span>
-          <button className='btn btnSmall' onClick={logout} aria-label='Logout'>Logout</button>
+          <button className='btn btnSmall' onClick={logout} aria-label='Abmelden'>Abmelden</button>
         </div>
       </div>
       <div className={`scene ${isMobile ? 'sceneMobile' : ''}`}>
