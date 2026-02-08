@@ -109,9 +109,16 @@ export default function App() {
 
   // Chat
   const [chatInput, setChatInput] = useState('')
-  const [chat, setChat] = useState([
-    { role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }
-  ])
+  const [chat, setChat] = useState(() => {
+    if (typeof window === 'undefined') {
+      return [{ role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }]
+    }
+    try {
+      const stored = JSON.parse(localStorage.getItem('coco_chat') || 'null')
+      if (Array.isArray(stored) && stored.length) return stored
+    } catch {}
+    return [{ role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }]
+  })
   const [busy, setBusy] = useState(false)
   const [crisisBanner, setCrisisBanner] = useState('')
 
@@ -132,6 +139,13 @@ export default function App() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const trimmed = chat.slice(-200)
+      localStorage.setItem('coco_chat', JSON.stringify(trimmed))
+    } catch {}
+  }, [chat])
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (window.location.pathname !== '/reset-password') return
