@@ -97,6 +97,8 @@ export default function App() {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotMsg, setForgotMsg] = useState('')
   const [forgotError, setForgotError] = useState('')
+  const [editingName, setEditingName] = useState(false)
+  const [nameDraft, setNameDraft] = useState('')
   const [resetToken, setResetToken] = useState('')
   const [resetPassword, setResetPassword] = useState('')
   const [resetConfirm, setResetConfirm] = useState('')
@@ -144,6 +146,7 @@ export default function App() {
   useEffect(() => {
     const name = user?.name || 'Gast'
     setDisplayName(isMobile && name.length > 12 ? `${name.slice(0, 11)}…` : name)
+    setNameDraft(user?.name || 'Gast')
   }, [user, isMobile])
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -488,6 +491,13 @@ export default function App() {
   const logout = useCallback(() => {
     storeUser(null)
   }, [storeUser])
+  const saveName = useCallback(() => {
+    const next = (nameDraft || '').trim()
+    if (!next) return
+    const updated = { ...user, name: next }
+    storeUser({ user: updated, token: user?.token })
+    setEditingName(false)
+  }, [nameDraft, user, storeUser])
   const dismissIntro = useCallback(() => {
     setShowIntroScreen(false)
     if (typeof window !== 'undefined') {
@@ -812,7 +822,23 @@ export default function App() {
       <div className='header'>
         <span>Coco</span>
         <div className='userBadge'>
-          <span>{displayName}</span>
+          {!editingName ? (
+            <>
+              <span>{displayName}</span>
+              <button className='btn btnSmall' onClick={() => setEditingName(true)} aria-label='Name bearbeiten'>Bearbeiten</button>
+            </>
+          ) : (
+            <>
+              <input
+                className='nameEditInput'
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveName()}
+              />
+              <button className='btn btnSmall' onClick={saveName}>OK</button>
+              <button className='btn btnSmall' onClick={() => setEditingName(false)}>Abbrechen</button>
+            </>
+          )}
           <button className='btn btnSmall' onClick={logout} aria-label='Abmelden'>Abmelden</button>
         </div>
       </div>
