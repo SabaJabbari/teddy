@@ -89,6 +89,7 @@ export default function App() {
     if (typeof window === 'undefined') return null
     try { return JSON.parse(localStorage.getItem('coco_user')) || null } catch { return null }
   })
+  const [displayName, setDisplayName] = useState('')
   const [authMode, setAuthMode] = useState('login')
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' })
   const [authLoading, setAuthLoading] = useState(false)
@@ -140,6 +141,10 @@ export default function App() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+  useEffect(() => {
+    const name = user?.name || 'Gast'
+    setDisplayName(isMobile && name.length > 12 ? `${name.slice(0, 11)}…` : name)
+  }, [user, isMobile])
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
@@ -807,8 +812,8 @@ export default function App() {
       <div className='header'>
         <span>Coco</span>
         <div className='userBadge'>
-          <span>{user?.name}</span>
-          <button className='btn btnSmall' onClick={logout}>Logout</button>
+          <span>{displayName}</span>
+          <button className='btn btnSmall' onClick={logout} aria-label='Logout'>Logout</button>
         </div>
       </div>
       <div className={`scene ${isMobile ? 'sceneMobile' : ''}`}>
