@@ -128,6 +128,7 @@ export default function App() {
   const [voiceStatus, setVoiceStatus] = useState('')
   const [voiceError, setVoiceError] = useState('')
   const [ttsAvailable, setTtsAvailable] = useState(false)
+  const chatEndRef = useRef(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -146,6 +147,12 @@ export default function App() {
       localStorage.setItem('coco_chat', JSON.stringify(trimmed))
     } catch {}
   }, [chat])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    } catch {}
+  }, [chat, busy])
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (window.location.pathname !== '/reset-password') return
@@ -845,6 +852,7 @@ export default function App() {
                   {m.content}
                 </div>
               ))}
+              <div ref={chatEndRef} />
             </div>
             {busy && (
               <div className='chatLoading' aria-live='polite'>
