@@ -805,7 +805,7 @@ export default function App() {
     <div className={`app ${bgClass}`} style={isMobile ? { minHeight: "100vh" } : undefined}>
       {showIntroScreen && introView}
       <div className='header'>
-        <span>Coco – App</span>
+        <span>Coco</span>
         <div className='userBadge'>
           <span>{user?.name}</span>
           <button className='btn btnSmall' onClick={logout}>Logout</button>
