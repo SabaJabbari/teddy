@@ -301,6 +301,15 @@ export default function App() {
     setIsBlinking(true)
     log('reset', '')
   }
+  const clearChatHistory = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const ok = window.confirm('Möchtest du den Chat-Verlauf wirklich löschen?')
+      if (!ok) return
+    }
+    const seed = { role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }
+    setChat([seed])
+    try { localStorage.removeItem('coco_chat') } catch {}
+  }, [])
 
   // Senden – IMMER antwortet das Backend (keine lokalen Fallback-Texte)
   async function sendChat() {
@@ -520,6 +529,7 @@ export default function App() {
         </button>
         <button className='btn' onClick={startBreathing} disabled={breathing}>1-min Atemübung</button>
         <button className='btn' onClick={resetAll}>Reset</button>
+        <button className='btn btnGhost' onClick={clearChatHistory}>Chat löschen</button>
       </div>
       {crisisBanner && (
         <div className='row' style={{ marginTop: 8 }}>
