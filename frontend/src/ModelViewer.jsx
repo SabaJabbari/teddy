@@ -261,6 +261,10 @@ export default function ModelViewer({
 }) {
   const [hasModel, setHasModel] = useState(true)
   const wrapRef = useRef(null)
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof document === 'undefined') return true
+    return document.visibilityState === 'visible'
+  })
   const [canvasSize, setCanvasSize] = useState({
     width: viewport?.width ?? 1024,
     height: viewport?.height ?? 768
@@ -287,6 +291,12 @@ export default function ModelViewer({
       .catch(() => alive && setHasModel(false))
     return () => { alive = false }
   }, [modelUrl])
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const onVis = () => setIsVisible(document.visibilityState === 'visible')
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [])
 
   return (
     <div className='canvasWrap' ref={wrapRef}>
@@ -297,6 +307,7 @@ export default function ModelViewer({
         onCreated={({ gl }) => {
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}
+        frameloop={isVisible ? 'always' : 'never'}
       >
         <ambientLight intensity={0.6} />
         <directionalLight
