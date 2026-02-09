@@ -1,6 +1,6 @@
 
 :root{--bg-nature-a:#0b1f1c;--bg-nature-b:#3ba395;--bg-neutral-a:#1f2937;--bg-neutral-b:#0b1120;--bg-future-a:#f472b6;--bg-future-b:#312e81;--panel:rgba(15,23,42,.78);--text:#f8fafc}
-*{box-sizing:border-box}html,body,#root{height:100%;margin:0;overflow:hidden}body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:#0b1120}
+*{box-sizing:border-box}html,body,#root{height:100%;margin:0;overflow:hidden}body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:#0b1120;-webkit-text-size-adjust:100%}
 .app{min-height:100vh;height:100%;display:grid;grid-template-rows:auto 1fr}.header{padding:10px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:30;min-height:48px}
 @supports (height: 100dvh){
   .app{min-height:100dvh;height:100dvh}
@@ -50,6 +50,7 @@
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
 .chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 20px;justify-content:center}
+body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;align-items:flex-end;z-index:60}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:18px 20px;border-radius:22px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:14px;height:clamp(210px,30vh,300px)}
 .chatBusy{border:1px solid rgba(96,165,250,0.45)}
 .chatLoading{font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:.2px;margin:-4px 0 2px}
@@ -110,10 +111,10 @@
   .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
   .chat{height:clamp(200px,28vh,260px);padding:12px 14px}
   .chatHistory{font-size:14px}
-  .chatRow{gap:8px}
-  .chatRow{flex-direction:row;align-items:center}
-  .chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
-  .chatRow button{width:96px;height:44px}
+.chatRow{gap:8px}
+.chatRow{flex-direction:row;align-items:center}
+.chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
+.chatRow button{width:96px;height:44px}
   .scene .modelSection{height:clamp(360px,56vh,640px)}
 }
 @media (max-width: 540px){

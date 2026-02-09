@@ -908,6 +908,12 @@ export default function App() {
                 onChange={e => setChatInput(e.target.value)}
                 placeholder='Nachricht schreiben…'
                 onKeyDown={(e) => e.key === 'Enter' && !busy && sendChat()}
+                onFocus={() => {
+                  if (typeof document !== 'undefined') document.body.classList.add('keyboard-open')
+                }}
+                onBlur={() => {
+                  if (typeof document !== 'undefined') document.body.classList.remove('keyboard-open')
+                }}
                 disabled={busy}
               />
               <button className='btn' disabled={busy || !chatInput.trim()} onClick={sendChat}>
