@@ -118,6 +118,7 @@ const inputStyle = {
   borderRadius: 12,
   padding: "10px 12px",
   width: "100%",
+  fontSize: 16,
 };
 const textAreaStyle = { ...inputStyle, minHeight: 96 };
 const btnStyle = {
