@@ -61,6 +61,7 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
 .chatHistory{flex:1;min-height:0;overflow-y:auto;padding-right:4px;font-size:15px;line-height:1.4}
 .chatHistory .msg{margin-bottom:8px}
 .chat::before{content:'';position:absolute;left:-18px;top:40px;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-right:18px solid var(--panel);filter:drop-shadow(-2px 2px 3px rgba(5,8,20,.35))}
+.chatRow input{font-size:16px}
 @media (max-width: 1200px){
   .panel{width:420px}
   .rightDock{width:360px}
