@@ -184,7 +184,7 @@ export default function App() {
       try { localStorage.setItem('coco_user', JSON.stringify(normalized)) } catch {}
     }
   }, [])
-  const clampScale = useCallback((value) => Math.min(1.3, Math.max(0.8, value)), [])
+  const clampScale = useCallback((value) => Math.min(1.8, Math.max(0.8, value)), [])
   const changeAvatarScale = useCallback((delta) => {
     setAvatarScale((prev) => {
       const next = clampScale((prev || 1) + delta)
@@ -460,7 +460,7 @@ export default function App() {
     }
   }, [])
   const currentModelUrl = MODEL_VARIANTS[modelIdx]?.url || MODEL_VARIANTS[0].url
-  const effectiveAvatarScale = avatarScale * (isMobile ? 2.35 : 1)
+  const effectiveAvatarScale = avatarScale * (isMobile ? 2.9 : 1)
   const isIntroAnimationActive = !introPlayed && /waving/i.test(currentModelUrl || '')
 
   useEffect(() => {
