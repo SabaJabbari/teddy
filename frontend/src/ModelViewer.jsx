@@ -288,13 +288,10 @@ export default function ModelViewer({
         && typeof window.matchMedia === 'function'
         && window.matchMedia('(hover:none) and (pointer:coarse)').matches
 
-      // On mobile Safari, keyboard-open shrinks layout height and causes a visual "zoom" jump.
-      // While keyboard is open, keep the last stable canvas height.
-      if (isTouchDevice && keyboardOpen && next.height < stableCanvasSizeRef.current.height) {
-        setCanvasSize({
-          width: next.width,
-          height: stableCanvasSizeRef.current.height
-        })
+      // On mobile Safari, keyboard-open can emit resize events that make the avatar jump/zoom.
+      // While keyboard is open on touch devices, keep the last stable canvas size unchanged.
+      if (isTouchDevice && keyboardOpen) {
+        setCanvasSize(stableCanvasSizeRef.current)
         return
       }
 
