@@ -700,7 +700,7 @@ export default function App() {
               return
             }
             if (resetPassword !== resetConfirm) {
-              setResetError('Passwörter stimmen nicht überein.')
+              setResetError('Passwoerter stimmen nicht ueberein.')
               return
             }
             setResetLoading(true)
