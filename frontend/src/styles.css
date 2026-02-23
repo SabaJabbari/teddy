@@ -61,6 +61,7 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
 .chatHistory{flex:1;min-height:0;overflow-y:auto;padding-right:4px;font-size:15px;line-height:1.4}
 .chatHistory .msg{margin-bottom:8px}
 .chat::before{content:'';position:absolute;left:-18px;top:40px;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-right:18px solid var(--panel);filter:drop-shadow(-2px 2px 3px rgba(5,8,20,.35))}
+.chatRow{display:flex;align-items:center;gap:8px;width:100%}
 .chatRow input{font-size:16px}
 @media (max-width: 1200px){
   .panel{width:420px}
@@ -112,11 +113,32 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
   .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
   .chat{height:clamp(210px,32vh,290px);padding:12px 14px}
   .chatHistory{font-size:14px}
-.chatRow{gap:8px}
-.chatRow{flex-direction:row;align-items:center}
-.chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
-.chatRow button{width:96px;height:44px}
+  .chatRow{display:flex;gap:8px;flex-direction:row;align-items:center}
+  .chatRow input{width:auto;flex:1;min-width:0;height:44px;font-size:16px;padding:10px 12px}
+  .chatRow button{width:96px;min-width:88px;height:44px;flex:0 0 auto}
   .scene .modelSection{height:clamp(180px,30vh,280px)}
+
+  body.keyboard-open .chatWrap,
+  body.keyboard-open .chatWrap.chatWrapMobile{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    margin:0;
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    z-index:100;
+    justify-content:center;
+  }
+  body.keyboard-open .chat{
+    width:100%;
+    max-width:none;
+    height:auto;
+    min-height:190px;
+    max-height:56vh;
+  }
+  body.keyboard-open .chatHistory{
+    max-height:calc(56vh - 112px);
+  }
 }
 @media (max-width: 540px){
   .row{flex-direction:column;align-items:flex-start}
