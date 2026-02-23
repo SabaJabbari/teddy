@@ -52,6 +52,7 @@
 .chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 20px;justify-content:center}
 body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;align-items:flex-end;z-index:60}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:18px 20px;border-radius:22px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:14px;height:clamp(210px,30vh,300px)}
+.chat{pointer-events:auto}
 .chatBusy{border:1px solid rgba(96,165,250,0.45)}
 .chatLoading{font-size:13px;color:rgba(255,255,255,0.7);letter-spacing:.2px;margin:-4px 0 2px}
 .chatLoading .dot{display:inline-block;animation:chatDot 1.2s infinite}
@@ -64,6 +65,7 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
 .chatRow{display:flex;align-items:center;gap:8px;width:100%}
 .chatRow input{font-size:16px}
 .chatSendBtn{width:96px;min-width:88px;height:44px;flex:0 0 auto}
+.chatRow button{position:relative;z-index:2}
 @media (max-width: 1200px){
   .panel{width:420px}
   .rightDock{width:360px}
@@ -155,19 +157,21 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
   .authToggle{flex-direction:column}
   .introCard{padding:18px}
   .chatRow{
-    flex-direction:column;
-    align-items:stretch;
-    gap:10px;
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
   }
   .chatRow input{
-    width:100%;
-    flex:0 0 auto;
-    height:46px;
-  }
-  .chatSendBtn{
-    width:100%;
+    width:auto;
+    flex:1 1 auto;
     min-width:0;
     height:44px;
+  }
+  .chatSendBtn{
+    width:82px;
+    min-width:82px;
+    height:44px;
+    flex:0 0 auto;
   }
   .header{padding:8px 12px;font-size:16px}
   .userBadge span{max-width:90px}
