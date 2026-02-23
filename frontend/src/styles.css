@@ -114,13 +114,16 @@
   .row .btn,
   .row .selector{width:100%}
   .panelToggle{top:8px;left:8px}
-  .chatWrap{margin:8px}
+  .chatWrap{margin:8px 8px calc(64px + env(safe-area-inset-bottom))}
   .chat{padding:14px}
   .chat::before{left:20px;top:32px}
   .authCard{padding:20px;border-radius:20px}
   .authToggle{flex-direction:column}
   .introCard{padding:18px}
-  .chatRow button{width:88px}
+  .chatRow{display:flex;align-items:center;gap:8px}
+  .chatRow input{flex:1;min-width:0}
+  .chatRow button{width:88px;min-width:88px;flex:0 0 auto}
+  .chatRow .btn{width:88px}
 }
 
 .authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3edff;padding:24px}
