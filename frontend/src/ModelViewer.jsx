@@ -43,12 +43,12 @@ function TeddyFitted({
       const clampedWidth = THREE.MathUtils.clamp(viewportWidth, 320, 520)
       const widthFactor = (clampedWidth - 320) / 200
       fittedHeight = THREE.MathUtils.lerp(0.95, 1.4, widthFactor)
-      yOffset = THREE.MathUtils.lerp(0.76, 0.92, widthFactor)
+      yOffset = THREE.MathUtils.lerp(0.58, 0.72, widthFactor)
     } else {
       const clampedHeight = THREE.MathUtils.clamp(viewportHeight, 420, 820)
       const heightFactor = (clampedHeight - 420) / 400
       fittedHeight = THREE.MathUtils.lerp(1.2, 2.0, heightFactor)
-      yOffset = THREE.MathUtils.lerp(0.84, 1.02, heightFactor)
+      yOffset = THREE.MathUtils.lerp(0.66, 0.82, heightFactor)
     }
     fittedHeight *= scaleMultiplier
     const box = new THREE.Box3().setFromObject(root.current)
