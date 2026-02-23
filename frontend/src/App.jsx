@@ -89,7 +89,6 @@ export default function App() {
     if (typeof window === 'undefined') return null
     try { return JSON.parse(localStorage.getItem('coco_user')) || null } catch { return null }
   })
-  const [displayName, setDisplayName] = useState('')
   const [authMode, setAuthMode] = useState('login')
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' })
   const [authLoading, setAuthLoading] = useState(false)
@@ -97,8 +96,6 @@ export default function App() {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotMsg, setForgotMsg] = useState('')
   const [forgotError, setForgotError] = useState('')
-  const [editingName, setEditingName] = useState(false)
-  const [nameDraft, setNameDraft] = useState('')
   const [resetToken, setResetToken] = useState('')
   const [resetPassword, setResetPassword] = useState('')
   const [resetConfirm, setResetConfirm] = useState('')
@@ -112,16 +109,9 @@ export default function App() {
 
   // Chat
   const [chatInput, setChatInput] = useState('')
-  const [chat, setChat] = useState(() => {
-    if (typeof window === 'undefined') {
-      return [{ role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }]
-    }
-    try {
-      const stored = JSON.parse(localStorage.getItem('coco_chat') || 'null')
-      if (Array.isArray(stored) && stored.length) return stored
-    } catch {}
-    return [{ role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }]
-  })
+  const [chat, setChat] = useState([
+    { role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }
+  ])
   const [busy, setBusy] = useState(false)
   const [crisisBanner, setCrisisBanner] = useState('')
 
@@ -131,7 +121,6 @@ export default function App() {
   const [voiceStatus, setVoiceStatus] = useState('')
   const [voiceError, setVoiceError] = useState('')
   const [ttsAvailable, setTtsAvailable] = useState(false)
-  const chatEndRef = useRef(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -143,24 +132,6 @@ export default function App() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-  useEffect(() => {
-    const name = user?.name || 'Gast'
-    setDisplayName(isMobile && name.length > 12 ? `${name.slice(0, 11)}…` : name)
-    setNameDraft(user?.name || 'Gast')
-  }, [user, isMobile])
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      const trimmed = chat.slice(-200)
-      localStorage.setItem('coco_chat', JSON.stringify(trimmed))
-    } catch {}
-  }, [chat])
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    try {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    } catch {}
-  }, [chat, busy])
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (window.location.pathname !== '/reset-password') return
@@ -316,15 +287,6 @@ export default function App() {
     setIsBlinking(true)
     log('reset', '')
   }
-  const clearChatHistory = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      const ok = window.confirm('Möchtest du den Chat-Verlauf wirklich löschen?')
-      if (!ok) return
-    }
-    const seed = { role: 'assistant', content: 'Hallo! Ich bin Coco, dein Selfcare-Avatar. Wie kann ich dir heute helfen?', style: STYLES[0] }
-    setChat([seed])
-    try { localStorage.removeItem('coco_chat') } catch {}
-  }, [])
 
   // Senden – IMMER antwortet das Backend (keine lokalen Fallback-Texte)
   async function sendChat() {
@@ -491,25 +453,6 @@ export default function App() {
   const logout = useCallback(() => {
     storeUser(null)
   }, [storeUser])
-  const saveName = useCallback(async () => {
-    const next = (nameDraft || '').trim()
-    if (!next) return
-    const updated = { ...user, name: next }
-    storeUser({ user: updated, token: user?.token })
-    setEditingName(false)
-    if (user?.token) {
-      try {
-        await fetch(apiUrl('/api/user/profile'), {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.token}`
-          },
-          body: JSON.stringify({ name: next })
-        })
-      } catch {}
-    }
-  }, [nameDraft, user, storeUser])
   const dismissIntro = useCallback(() => {
     setShowIntroScreen(false)
     if (typeof window !== 'undefined') {
@@ -517,7 +460,7 @@ export default function App() {
     }
   }, [])
   const currentModelUrl = MODEL_VARIANTS[modelIdx]?.url || MODEL_VARIANTS[0].url
-  const effectiveAvatarScale = avatarScale * (isMobile ? 2.4 : 1)
+  const effectiveAvatarScale = avatarScale * (isMobile ? 1.45 : 1)
   const isIntroAnimationActive = !introPlayed && /waving/i.test(currentModelUrl || '')
 
   useEffect(() => {
@@ -563,7 +506,6 @@ export default function App() {
         </button>
         <button className='btn' onClick={startBreathing} disabled={breathing}>1-min Atemübung</button>
         <button className='btn' onClick={resetAll}>Reset</button>
-        <button className='btn btnGhost' onClick={clearChatHistory}>Chat löschen</button>
       </div>
       {crisisBanner && (
         <div className='row' style={{ marginTop: 8 }}>
@@ -832,26 +774,10 @@ export default function App() {
     <div className={`app ${bgClass}`} style={isMobile ? { minHeight: "100vh" } : undefined}>
       {showIntroScreen && introView}
       <div className='header'>
-        <span>Coco</span>
+        <span>Coco – App</span>
         <div className='userBadge'>
-          {!editingName ? (
-            <>
-              <span>{displayName}</span>
-              <button className='btn btnSmall' onClick={() => setEditingName(true)} aria-label='Name bearbeiten'>Bearbeiten</button>
-            </>
-          ) : (
-            <>
-              <input
-                className='nameEditInput'
-                value={nameDraft}
-                onChange={(e) => setNameDraft(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && saveName()}
-              />
-              <button className='btn btnSmall' onClick={saveName}>OK</button>
-              <button className='btn btnSmall' onClick={() => setEditingName(false)}>Abbrechen</button>
-            </>
-          )}
-          <button className='btn btnSmall' onClick={logout} aria-label='Abmelden'>Abmelden</button>
+          <span>{user?.name}</span>
+          <button className='btn btnSmall' onClick={logout}>Logout</button>
         </div>
       </div>
       <div className={`scene ${isMobile ? 'sceneMobile' : ''}`}>
@@ -887,7 +813,8 @@ export default function App() {
         </div>
 
         <div className={`chatWrap ${isMobile ? 'chatWrapMobile' : ''}`}>
-          <div className={`chat ${busy ? 'chatBusy' : ''}`}>
+          <div className={`chat ${busy ? 'chatBusy' : ''} ${isMobile ? 'chatSheet' : ''}`}>
+            {isMobile && <div className='chatSheetHandle' aria-hidden='true' />}
             <div className='chatHistory'>
               {chat.map((m, i) => (
                 <div key={i} className={'msg ' + (m.role === 'user' ? 'user' : 'bot')}>
@@ -895,7 +822,6 @@ export default function App() {
                   {m.content}
                 </div>
               ))}
-              <div ref={chatEndRef} />
             </div>
             {busy && (
               <div className='chatLoading' aria-live='polite'>
@@ -908,12 +834,6 @@ export default function App() {
                 onChange={e => setChatInput(e.target.value)}
                 placeholder='Nachricht schreiben…'
                 onKeyDown={(e) => e.key === 'Enter' && !busy && sendChat()}
-                onFocus={() => {
-                  if (typeof document !== 'undefined') document.body.classList.add('keyboard-open')
-                }}
-                onBlur={() => {
-                  if (typeof document !== 'undefined') document.body.classList.remove('keyboard-open')
-                }}
                 disabled={busy}
               />
               <button className='btn' disabled={busy || !chatInput.trim()} onClick={sendChat}>
