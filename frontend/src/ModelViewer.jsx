@@ -269,6 +269,10 @@ export default function ModelViewer({
     width: viewport?.width ?? 1024,
     height: viewport?.height ?? 768
   })
+  const stableCanvasSizeRef = useRef({
+    width: viewport?.width ?? 1024,
+    height: viewport?.height ?? 768
+  })
   useGLTF.preload(modelUrl)
 
   useEffect(() => {
@@ -278,7 +282,24 @@ export default function ModelViewer({
       const entry = entries[0]
       if (!entry) return
       const { width, height } = entry.contentRect
-      setCanvasSize({ width, height })
+      const next = { width, height }
+      const keyboardOpen = typeof document !== 'undefined' && document.body.classList.contains('keyboard-open')
+      const isTouchDevice = typeof window !== 'undefined'
+        && typeof window.matchMedia === 'function'
+        && window.matchMedia('(hover:none) and (pointer:coarse)').matches
+
+      // On mobile Safari, keyboard-open shrinks layout height and causes a visual "zoom" jump.
+      // While keyboard is open, keep the last stable canvas height.
+      if (isTouchDevice && keyboardOpen && next.height < stableCanvasSizeRef.current.height) {
+        setCanvasSize({
+          width: next.width,
+          height: stableCanvasSizeRef.current.height
+        })
+        return
+      }
+
+      stableCanvasSizeRef.current = next
+      setCanvasSize(next)
     })
     observer.observe(el)
     return () => observer.disconnect()
