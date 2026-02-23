@@ -35,16 +35,25 @@ function extractReply(data) {
   return ''
 }
 
-export async function chatWithAI(messages, styleKey = 'formal') {
+export async function chatWithAI(messages, styleKey = 'formal', extra = {}) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15000)
+  const modeFromEnv = (import.meta.env.VITE_CHAT_MODE ?? '').trim()
+  const modeFromExtra = typeof extra?.mode === 'string' ? extra.mode.trim() : ''
+  const mode = modeFromExtra || modeFromEnv || 'avatar_full'
 
   try {
     const res = await fetch(CHAT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
-      body: JSON.stringify({ messages, style: styleKey })
+      body: JSON.stringify({
+        messages,
+        style: styleKey,
+        mode,
+        profile: extra || null,
+        evalMeta: extra?.evalMeta || null
+      })
     })
     clearTimeout(timeout)
 
