@@ -60,6 +60,7 @@
 .chatHistory{flex:1;min-height:0;overflow-y:auto;padding-right:4px;font-size:15px;line-height:1.4}
 .chatHistory .msg{margin-bottom:8px}
 .chat::before{content:'';position:absolute;left:-18px;top:40px;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-right:18px solid var(--panel);filter:drop-shadow(-2px 2px 3px rgba(5,8,20,.35))}
+.chatRow{display:flex;align-items:center;gap:8px;width:100%}
 .chatRow input{font-size:16px}
 
 /* iOS Safari zoomt beim Fokus, wenn Inputs unter 16px berechnet werden. */
@@ -145,11 +146,28 @@
   .chatHistory{
     max-height:calc(50vh - 110px);
   }
+  body.keyboard-open .scene .modelSection{
+    display:none;
+  }
+  body.keyboard-open .scene .panelToggle,
+  body.keyboard-open .scene .avatarControls{
+    display:none;
+  }
+  body.keyboard-open .chatWrap,
+  body.keyboard-open .chatWrap.chatWrapMobile{
+    margin:0;
+  }
+  body.keyboard-open .chat{
+    min-height:220px;
+    max-height:none;
+  }
+  body.keyboard-open .chatHistory{
+    max-height:36vh;
+  }
   .chatHistory{font-size:14px}
-.chatRow{gap:8px}
-.chatRow{flex-direction:row;align-items:center}
+.chatRow{display:flex;gap:8px;flex-direction:row;align-items:center}
 .chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
-.chatRow button{width:96px;height:44px}
+.chatRow button{width:96px;min-width:88px;height:44px;flex:0 0 auto}
 }
 @media (max-width: 540px){
   .scene .modelSection{height:clamp(150px,26vh,210px)}
