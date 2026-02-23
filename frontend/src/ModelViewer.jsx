@@ -354,7 +354,16 @@ export default function ModelViewer({
           )}
         </Suspense>
         <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={10} blur={2.5} far={4} />
-        <OrbitControls enableDamping={false} autoRotate={false} minDistance={3} maxDistance={14} target={[0, 1.1, 0]} />
+        <OrbitControls
+          enableDamping={false}
+          autoRotate={false}
+          enableRotate={true}
+          enableZoom={true}
+          enablePan={false}
+          minDistance={3}
+          maxDistance={14}
+          target={[0, 1.1, 0]}
+        />
       </Canvas>
     </div>
   )
