@@ -916,7 +916,7 @@ export default function App() {
                 }}
                 disabled={busy}
               />
-              <button className='btn' disabled={busy || !chatInput.trim()} onClick={sendChat}>
+              <button type='button' className='btn chatSendBtn' disabled={busy || !chatInput.trim()} onClick={sendChat}>
                 {busy ? 'Senden…' : 'Senden'}
               </button>
             </div>

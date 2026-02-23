@@ -63,6 +63,7 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
 .chat::before{content:'';position:absolute;left:-18px;top:40px;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-right:18px solid var(--panel);filter:drop-shadow(-2px 2px 3px rgba(5,8,20,.35))}
 .chatRow{display:flex;align-items:center;gap:8px;width:100%}
 .chatRow input{font-size:16px}
+.chatSendBtn{width:96px;min-width:88px;height:44px;flex:0 0 auto}
 @media (max-width: 1200px){
   .panel{width:420px}
   .rightDock{width:360px}
@@ -115,7 +116,7 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
   .chatHistory{font-size:14px}
   .chatRow{display:flex;gap:8px;flex-direction:row;align-items:center}
   .chatRow input{width:auto;flex:1;min-width:0;height:44px;font-size:16px;padding:10px 12px}
-  .chatRow button{width:96px;min-width:88px;height:44px;flex:0 0 auto}
+  .chatSendBtn{width:96px;min-width:88px;height:44px;flex:0 0 auto}
   .scene .modelSection{height:clamp(180px,30vh,280px)}
 
   body.keyboard-open .chatWrap,
@@ -153,7 +154,21 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
   .authCard{padding:20px;border-radius:20px}
   .authToggle{flex-direction:column}
   .introCard{padding:18px}
-  .chatRow button{width:88px}
+  .chatRow{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+  .chatRow input{
+    width:100%;
+    flex:0 0 auto;
+    height:46px;
+  }
+  .chatSendBtn{
+    width:100%;
+    min-width:0;
+    height:44px;
+  }
   .header{padding:8px 12px;font-size:16px}
   .userBadge span{max-width:90px}
   .btnSmall{padding:6px 8px;font-size:12px}
