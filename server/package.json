@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "migrate:users": "node scripts/migrate-users.js",
-    "benchmark:chat": "node scripts/benchmark-chat.js"
+    "migrate:users": "node scripts/migrate-users.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

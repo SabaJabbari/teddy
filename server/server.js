@@ -31,8 +31,6 @@ const SMTP_PASS = process.env.SMTP_PASS || ''
 const SMTP_FROM = process.env.SMTP_FROM || ''
 const SMTP_SECURE = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true'
 const LOG_REQUESTS = String(process.env.LOG_REQUESTS || 'true').toLowerCase() !== 'false'
-const CHAT_DEFAULT_MODE = process.env.CHAT_DEFAULT_MODE || 'avatar_full'
-const EVAL_LOG_ENABLED = String(process.env.EVAL_LOG_ENABLED || 'true').toLowerCase() !== 'false'
 
 app.use(cors({
   origin(origin, callback) {
@@ -51,9 +49,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const dataDir = path.join(__dirname, 'data')
 const usersFile = path.join(dataDir, 'users.json')
-const evalLogsFile = process.env.EVAL_LOG_FILE
-  ? (path.isAbsolute(process.env.EVAL_LOG_FILE) ? process.env.EVAL_LOG_FILE : path.join(__dirname, process.env.EVAL_LOG_FILE))
-  : path.join(dataDir, 'chat-eval.ndjson')
 const dbConfig = DATABASE_URL
   ? {
       connectionString: DATABASE_URL,
@@ -63,7 +58,6 @@ const dbConfig = DATABASE_URL
     }
   : null
 const pool = dbConfig ? new Pool(dbConfig) : null
-const CHAT_MODES = new Set(['text', 'avatar', 'avatar_safety', 'avatar_full'])
 
 app.use((req, res, next) => {
   const id = crypto.randomBytes(6).toString('hex')
@@ -206,18 +200,6 @@ async function updateUserAuth(userId, salt, passwordHash, hashAlgo) {
   const idx = users.findIndex((u) => u.id === userId)
   if (idx === -1) return
   users[idx] = { ...users[idx], salt, passwordHash, hashAlgo }
-  await writeUsersFile(users)
-}
-
-async function updateUserName(userId, name) {
-  if (pool) {
-    await pool.query('UPDATE users SET name = $1 WHERE id = $2', [name, userId])
-    return
-  }
-  const users = await readUsersFile()
-  const idx = users.findIndex((u) => u.id === userId)
-  if (idx === -1) return
-  users[idx] = { ...users[idx], name }
   await writeUsersFile(users)
 }
 
@@ -433,107 +415,6 @@ function mockReply(userText='', styleKey='formal'){
   return `${s.opener} ${tips[0]} ${tips[1]} ${s.ask}`
 }
 
-function normalizeMode(raw = '') {
-  const value = String(raw || '').trim().toLowerCase()
-  if (CHAT_MODES.has(value)) return value
-  return CHAT_MODES.has(CHAT_DEFAULT_MODE) ? CHAT_DEFAULT_MODE : 'avatar_full'
-}
-
-function getModeFlags(mode = 'avatar_full') {
-  return {
-    avatar: mode !== 'text',
-    safety: mode === 'avatar_safety' || mode === 'avatar_full',
-    personalization: mode === 'avatar_full'
-  }
-}
-
-function safeText(value, max = 140) {
-  if (value == null) return ''
-  return String(value).replace(/\s+/g, ' ').trim().slice(0, max)
-}
-
-function extractProfileContext(rawProfile) {
-  if (!rawProfile || typeof rawProfile !== 'object') return null
-  const profile = rawProfile.profile && typeof rawProfile.profile === 'object' ? rawProfile.profile : {}
-  const answers = rawProfile.answers && typeof rawProfile.answers === 'object' ? rawProfile.answers : {}
-  const ctx = {
-    name: safeText(answers.name, 40),
-    safePlace: safeText(answers.safePlace, 80),
-    companionFeeling: safeText(answers.companionFeeling, 80),
-    wishPlace: safeText(answers.wishPlace, 80),
-    mood: safeText(answers.weather, 60),
-    tone: safeText(profile.tone, 30),
-    pacing: safeText(profile.pacing, 30),
-    summary: safeText(profile.summary, 220)
-  }
-  const hasValue = Object.values(ctx).some(Boolean)
-  return hasValue ? ctx : null
-}
-
-function buildSystemForMode(styleKey = 'formal', mode = 'avatar_full', profileContext = null) {
-  if (mode === 'text') {
-    const s = STYLE[styleKey] || STYLE.formal
-    return [
-      'Du bist ein KI-Selfcare-Assistent. Antworte immer auf Deutsch.',
-      'Hilf mit kurzen, alltagsnahen Selbstfürsorge-Impulsen (Atmung 4-2-4, Grounding, Mikro-Pausen).',
-      'Keine medizinischen/diagnostischen/therapeutischen Ratschläge.',
-      `Stil: ${s.name}, Ton: ${s.tone}, Anrede: ${s.person}.`,
-      'Länge: 2-5 kurze Sätze mit 1 konkreten Aktion und 1 offenen Frage.'
-    ].join('\n')
-  }
-  const parts = [buildSystem(styleKey)]
-  if (mode === 'avatar_full' && profileContext) {
-    const profileLines = [
-      profileContext.summary ? `Profil-Zusammenfassung: ${profileContext.summary}` : '',
-      profileContext.name ? `Name der Person: ${profileContext.name}` : '',
-      profileContext.mood ? `Aktuelle Stimmung (self-report): ${profileContext.mood}` : '',
-      profileContext.safePlace ? `Sicherer Ort: ${profileContext.safePlace}` : '',
-      profileContext.companionFeeling ? `Gewünschte Begleitung: ${profileContext.companionFeeling}` : '',
-      profileContext.wishPlace ? `Gewünschter mentaler Ort: ${profileContext.wishPlace}` : '',
-      profileContext.tone ? `Bevorzugter Ton: ${profileContext.tone}` : '',
-      profileContext.pacing ? `Bevorzugtes Tempo: ${profileContext.pacing}` : ''
-    ].filter(Boolean)
-    if (profileLines.length) {
-      parts.push('Personalisiere die Antwort mit diesem Kontext, ohne sensible Informationen zu erfinden:')
-      parts.push(profileLines.join('\n'))
-    }
-  }
-  return parts.join('\n\n')
-}
-
-function estimateTokens(text = '') {
-  return Math.ceil(String(text || '').length / 4)
-}
-
-function estimateTokensFromChars(chars = 0) {
-  const value = Number(chars)
-  if (!Number.isFinite(value) || value <= 0) return 0
-  return Math.ceil(value / 4)
-}
-
-function sanitizeEvalMeta(rawMeta) {
-  if (!rawMeta || typeof rawMeta !== 'object') return {}
-  const scenarioId = safeText(rawMeta.scenarioId, 80)
-  const participantId = safeText(rawMeta.participantId, 80)
-  const ratingValue = Number(rawMeta.rating)
-  const rating = Number.isFinite(ratingValue) ? ratingValue : null
-  return {
-    ...(scenarioId ? { scenarioId } : {}),
-    ...(participantId ? { participantId } : {}),
-    ...(rating != null ? { rating } : {})
-  }
-}
-
-async function appendEvalLog(entry) {
-  if (!EVAL_LOG_ENABLED) return
-  try {
-    await fs.mkdir(path.dirname(evalLogsFile), { recursive: true })
-    await fs.appendFile(evalLogsFile, `${JSON.stringify(entry)}\n`)
-  } catch (err) {
-    console.error('eval log error', err)
-  }
-}
-
 app.get('/api/tts/status', (req, res) => {
   const enabled = Boolean(ELEVEN_API_KEY && (ELEVEN_VOICE_ID || req.query.voice))
   res.json({ enabled })
@@ -698,95 +579,20 @@ app.get('/api/auth/me', async (req, res) => {
   }
 })
 
-app.patch('/api/user/profile', async (req, res) => {
-  const auth = req.headers.authorization || ''
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
-  const data = verifyToken(token)
-  if (!data) return res.status(401).json({ error: 'Ungültiger oder abgelaufener Token.' })
-  const { name = '' } = req.body || {}
-  const cleanName = String(name).trim()
-  if (!cleanName || cleanName.length > 80) {
-    return res.status(400).json({ error: 'Name ist erforderlich.' })
-  }
-  try {
-    await updateUserName(data.sub, cleanName)
-    res.json({ ok: true, user: { id: data.sub, name: cleanName } })
-  } catch (err) {
-    console.error('profile update error', err)
-    res.status(500).json({ error: 'Profil konnte nicht aktualisiert werden.' })
-  }
-})
-
 app.post('/api/chat', async (req,res)=>{
-  const startedAt = Date.now()
-  const { messages = [], style = 'formal', mode = '', profile = null, evalMeta = null } = req.body || {}
+  const { messages = [], style = 'formal' } = req.body || {}
   const styleKey = (typeof style === 'string' && style.trim()) ? style.trim() : 'formal'
-  const normalizedMode = normalizeMode(mode)
-  const modeFlags = getModeFlags(normalizedMode)
   const safeMessages = Array.isArray(messages) ? messages : []
   const last = safeMessages.filter(m=>m?.role==='user').slice(-1)[0]?.content || ''
-  const profileContext = modeFlags.personalization ? extractProfileContext(profile) : null
-  const cleanEvalMeta = sanitizeEvalMeta(evalMeta)
-  const promptChars = safeMessages.reduce((sum, msg) => sum + String(msg?.content || '').length, 0)
-
-  const writeLogAndSend = async ({ reply, crisis = false, llmUsed = false, source = 'unknown', usage = null }) => {
-    const completionChars = String(reply || '').length
-    const usagePrompt = Number(usage?.prompt_tokens)
-    const usageCompletion = Number(usage?.completion_tokens)
-    const promptTokens = Number.isFinite(usagePrompt) ? usagePrompt : estimateTokensFromChars(promptChars)
-    const completionTokens = Number.isFinite(usageCompletion) ? usageCompletion : estimateTokensFromChars(completionChars)
-    const totalTokens = promptTokens + completionTokens
-    await appendEvalLog({
-      ts: new Date().toISOString(),
-      requestId: req.requestId || '',
-      mode: normalizedMode,
-      style: styleKey,
-      flags: modeFlags,
-      input: {
-        messageCount: safeMessages.length,
-        lastUserChars: String(last).length,
-        promptChars
-      },
-      output: {
-        crisis,
-        llmUsed,
-        source,
-        replyChars: completionChars
-      },
-      metrics: {
-        latencyMs: Date.now() - startedAt,
-        promptTokens,
-        completionTokens,
-        totalTokens
-      },
-      eval: cleanEvalMeta
-    })
-    return res.json({ reply, crisis, mode: normalizedMode })
-  }
-
-  if (modeFlags.safety && isCrisis(last)) {
-    return writeLogAndSend({
-      reply: crisisReply(styleKey),
-      crisis: true,
-      llmUsed: false,
-      source: 'crisis_short_circuit'
-    })
-  }
+  if (isCrisis(last)) return res.json({ reply: crisisReply(styleKey), crisis: true })
 
   const key = process.env.OPENAI_API_KEY
-  if (!key) {
-    return writeLogAndSend({
-      reply: mockReply(last, styleKey),
-      crisis: false,
-      llmUsed: false,
-      source: 'mock_no_api_key'
-    })
-  }
+  if (!key) return res.json({ reply: mockReply(last, styleKey), crisis: false })
 
   try {
     const payload = {
       model: 'gpt-4o-mini', temperature: 0.4, top_p: 1, max_tokens: 300,
-      messages: [{ role:'system', content: buildSystemForMode(styleKey, normalizedMode, profileContext) }, ...safeMessages].slice(-20)
+      messages: [{ role:'system', content: buildSystem(styleKey) }, ...safeMessages].slice(-20)
     }
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
@@ -794,35 +600,15 @@ app.post('/api/chat', async (req,res)=>{
     })
     if (!r.ok) {
       const detail = await r.text(); console.error('LLM error:', detail)
-      return writeLogAndSend({
-        reply: mockReply(last, styleKey),
-        crisis: false,
-        llmUsed: false,
-        source: 'mock_llm_http_error'
-      })
+      return res.json({ reply: mockReply(last, styleKey), crisis: false })
     }
     const j = await r.json()
     let reply = j?.choices?.[0]?.message?.content?.trim() || ''
-    let source = 'llm'
-    if (!reply || reply.split(/\s+/).length > 120) {
-      reply = mockReply(last, styleKey)
-      source = 'mock_output_guardrail'
-    }
-    return writeLogAndSend({
-      reply,
-      crisis: false,
-      llmUsed: source === 'llm',
-      source,
-      usage: j?.usage
-    })
+    if (!reply || reply.split(/\s+/).length > 120) reply = mockReply(last, styleKey)
+    res.json({ reply, crisis: false })
   } catch(e) {
     console.error('Server error:', e)
-    return writeLogAndSend({
-      reply: mockReply(last, styleKey),
-      crisis: false,
-      llmUsed: false,
-      source: 'mock_llm_exception'
-    })
+    res.json({ reply: mockReply(last, styleKey), crisis: false })
   }
 })
 
