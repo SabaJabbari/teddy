@@ -1,10 +1,10 @@
 
 :root{--bg-nature-a:#0b1f1c;--bg-nature-b:#3ba395;--bg-neutral-a:#1f2937;--bg-neutral-b:#0b1120;--bg-future-a:#f472b6;--bg-future-b:#312e81;--panel:rgba(15,23,42,.78);--text:#f8fafc}
-*{box-sizing:border-box}html,body,#root{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:#f3edff}
-.app{min-height:100vh;height:100%;display:grid;grid-template-rows:auto 1fr;overflow:hidden}.header{padding:10px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
+*{box-sizing:border-box}html,body,#root{height:100%;margin:0}body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--text);background:#f3edff}
+.app{min-height:100vh;height:100%;display:grid;grid-template-rows:auto 1fr}.header{padding:10px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .app.onboardingScreen{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;padding:32px 16px;background:#f3edff}
 .app.onboardingScreen .card{width:100%;max-width:min(560px,100%);margin:12px 0}
-.scene{position:relative;min-height:0;height:100%;padding:16px;display:flex;flex-direction:column;gap:16px;overflow:hidden}.scene .modelSection{position:relative;flex:1;width:100%;height:clamp(420px,68vh,760px);border-radius:18px;overflow:hidden;touch-action:none}.scene.sceneMobile{padding:12px 12px 20px;min-height:0;height:100%}.scene.sceneMobile .mobileSection{width:100%;margin-bottom:8px}.scene.sceneMobile .modelSection{height:clamp(260px,42vh,420px)}.app.nature{background:linear-gradient(145deg,var(--bg-nature-a) 0%,#124f3b 40%,var(--bg-nature-b) 100%)}
+.scene{position:relative;min-height:100vh;padding:16px;display:flex;flex-direction:column;gap:16px}.scene .modelSection{position:relative;flex:1;width:100%;height:clamp(420px,68vh,760px);border-radius:18px;overflow:hidden}.scene.sceneMobile{padding:12px 12px 20px;min-height:100vh}.scene.sceneMobile .mobileSection{width:100%;margin-bottom:8px}.scene.sceneMobile .modelSection{height:clamp(340px,60vh,660px)}.app.nature{background:linear-gradient(145deg,var(--bg-nature-a) 0%,#124f3b 40%,var(--bg-nature-b) 100%)}
 .app.neutral{background:linear-gradient(180deg,var(--bg-neutral-a) 0%,var(--bg-neutral-b) 100%)}.app.future{background:radial-gradient(circle at 30% 20%,var(--bg-future-a) 0%,#c084fc 45%,var(--bg-future-b) 75%,#0b1120 100%)}
 .panel{position:absolute;top:16px;left:16px;width:520px;background:var(--panel);padding:18px;border-radius:18px;box-shadow:0 18px 45px rgba(5,8,20,.45);z-index:5}
 .panel.panelMobile{position:relative;width:100%;max-width:600px;margin:0;padding:16px;border-radius:18px;box-shadow:0 18px 45px rgba(5,8,20,.45);max-height:calc(100vh - 40px);overflow:auto}
@@ -40,9 +40,8 @@
 .introActions{display:flex;gap:10px;flex-wrap:wrap}
 .introActions .btn{flex:1;min-width:140px}
 .logline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:12px;opacity:.9}.canvasWrap{position:absolute;inset:0;height:100%;min-height:100%}
-.modelCanvas{touch-action:none}
-.avatarControls{position:absolute;right:16px;top:16px;display:flex;align-items:center;gap:10px;background:rgba(10,16,34,0.78);padding:10px 14px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,0.35);z-index:30}
-.avatarBtn{width:36px;height:36px;border:none;border-radius:50%;background:rgba(255,255,255,0.2);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+.avatarControls{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;background:rgba(15,23,42,0.65);padding:10px 14px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,0.35);z-index:5}
+.avatarBtn{width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:18px;line-height:1;cursor:pointer}
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
@@ -67,8 +66,8 @@
   .scene{
     height:auto;
     min-height:100vh;
-    padding-top:12px;
-    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+    padding-top:90px;
+    padding-bottom:calc(140px + env(safe-area-inset-bottom));
   }
   .header{
     position:sticky;
@@ -97,16 +96,16 @@
 }
 .scene{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
 @media (max-width: 768px){
-  .scene{padding-top:10px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .scene{padding-top:16px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}
   .canvasWrap{position:relative;height:100%}
-  .avatarControls{right:10px;top:10px;padding:8px 12px;gap:6px}
+  .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
   .chat{height:clamp(180px,26vh,240px);padding:14px 16px}
   .chatHistory{font-size:13px}
   .chatRow{gap:8px}
   .chatRow{flex-direction:row;align-items:center}
   .chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
   .chatRow button{width:96px;height:44px}
-  .scene .modelSection{height:clamp(190px,32vh,320px)}
+  .scene .modelSection{height:clamp(300px,48vh,520px)}
 }
 @media (max-width: 540px){
   .row{flex-direction:column;align-items:flex-start}
@@ -115,16 +114,13 @@
   .row .btn,
   .row .selector{width:100%}
   .panelToggle{top:8px;left:8px}
-  .chatWrap{margin:8px 8px calc(64px + env(safe-area-inset-bottom))}
+  .chatWrap{margin:8px}
   .chat{padding:14px}
   .chat::before{left:20px;top:32px}
   .authCard{padding:20px;border-radius:20px}
   .authToggle{flex-direction:column}
   .introCard{padding:18px}
-  .chatRow{display:flex;align-items:center;gap:8px}
-  .chatRow input{flex:1;min-width:0}
-  .chatRow button{width:88px;min-width:88px;flex:0 0 auto}
-  .chatRow .btn{width:88px}
+  .chatRow button{width:88px}
 }
 
 .authScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3edff;padding:24px}

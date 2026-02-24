@@ -184,7 +184,7 @@ export default function App() {
       try { localStorage.setItem('coco_user', JSON.stringify(normalized)) } catch {}
     }
   }, [])
-  const clampScale = useCallback((value) => Math.min(3.5, Math.max(0.8, value)), [])
+  const clampScale = useCallback((value) => Math.min(1.3, Math.max(0.8, value)), [])
   const changeAvatarScale = useCallback((delta) => {
     setAvatarScale((prev) => {
       const next = clampScale((prev || 1) + delta)
@@ -460,7 +460,7 @@ export default function App() {
     }
   }, [])
   const currentModelUrl = MODEL_VARIANTS[modelIdx]?.url || MODEL_VARIANTS[0].url
-  const effectiveAvatarScale = avatarScale * (isMobile ? 4.2 : 1)
+  const effectiveAvatarScale = avatarScale * (isMobile ? 1.45 : 1)
   const isIntroAnimationActive = !introPlayed && /waving/i.test(currentModelUrl || '')
 
   useEffect(() => {
@@ -810,25 +810,6 @@ export default function App() {
             playNativeOnce={isIntroAnimationActive}
             onAnimationFinished={handleIntroAnimationFinished}
           />
-          <div className='avatarControls' aria-label='Avatar Größe'>
-            <button
-              type='button'
-              className='avatarBtn'
-              onClick={() => changeAvatarScale(-0.1)}
-              aria-label='Avatar verkleinern'
-            >
-              -
-            </button>
-            <span className='avatarScaleLabel'>{Math.round((avatarScale || 1) * 100)}%</span>
-            <button
-              type='button'
-              className='avatarBtn'
-              onClick={() => changeAvatarScale(0.1)}
-              aria-label='Avatar vergrößern'
-            >
-              +
-            </button>
-          </div>
         </div>
 
         <div className={`chatWrap ${isMobile ? 'chatWrapMobile' : ''}`}>

@@ -8,11 +8,6 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      workbox: {
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true
-      },
       includeAssets: ['icons/apple-touch-icon.png'],
       manifest: {
         name: 'Coco – App',

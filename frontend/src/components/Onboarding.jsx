@@ -118,7 +118,6 @@ const inputStyle = {
   borderRadius: 12,
   padding: "10px 12px",
   width: "100%",
-  fontSize: 16,
 };
 const textAreaStyle = { ...inputStyle, minHeight: 96 };
 const btnStyle = {
@@ -141,7 +140,7 @@ const GREETING_PHOTO = {
 const QUESTION_TEDDY_SRC = "/assets/Teddy.png";
 const QUESTION_TEDDY_SIT_SRC = "/assets/Teddy-sitz.png";
 
-function QuestionShell({ children, variant = "default", isMobile, isFocused = false }) {
+function QuestionShell({ children, variant = "default", isMobile }) {
   const imageSrc = variant === "sit" ? QUESTION_TEDDY_SIT_SRC : QUESTION_TEDDY_SRC;
   const rowLayout = isMobile
     ? {
@@ -156,10 +155,9 @@ function QuestionShell({ children, variant = "default", isMobile, isFocused = fa
   const imageWrapper = isMobile
     ? { ...questionImageWrapperStyle, minWidth: 120, flex: "0 0 120px", minHeight: 130 }
     : questionImageWrapperStyle;
-  const focusScale = isFocused ? 1.08 : 1
   const imageStyle = isMobile
-    ? { ...questionImageStyle, width: 120, maxHeight: 200, transform: `scale(${focusScale})`, transition: "transform 220ms ease" }
-    : { ...questionImageStyle, transform: `scale(${focusScale})`, transition: "transform 220ms ease" };
+    ? { ...questionImageStyle, width: 120, maxHeight: 200 }
+    : questionImageStyle;
   const contentStyle = isMobile
     ? { ...questionContentStyle, flex: "1 1 200px", minWidth: 0, marginTop: 0 }
     : questionContentStyle;
@@ -243,7 +241,6 @@ function analyzeAnswers(a) {
 // --- Komponente --------------------------------------------------------------
 export default function Onboarding({ onComplete }) {
   const [step, setStep] = useState(0);
-  const [isInputFocused, setIsInputFocused] = useState(false);
   const [a, setA] = useState({
     name: "",
     age: "",
@@ -264,9 +261,6 @@ export default function Onboarding({ onComplete }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  useEffect(() => {
-    setIsInputFocused(false);
-  }, [step]);
 
   // Wichtig: 10 Steps -> 0..9 (Startfrage + Begrüßung + 7 Fragen + Abschluss)
   const total = 10;
@@ -300,7 +294,7 @@ export default function Onboarding({ onComplete }) {
           </div>
           <p style={{ fontSize: 15, lineHeight: 1.45, color: "#374151" }}>
             Coco legt schon mal sein Kuschelkissen bereit und summt leise vor sich hin.
-            Möchtest du ihm ein paar sanfte Stichwörter geben, damit er sich auf dich einstimmen kann?
+            Moechtest du ihm ein paar sanfte Stichwoerter geben, damit er sich auf dich einstimmen kann?
             Ganz ohne Eile und jederzeit ueberspringbar.
           </p>
           <div className="onboardingNav" style={{ display: "flex", gap: 10 }}>
@@ -369,7 +363,7 @@ export default function Onboarding({ onComplete }) {
           className="card"
           style={isMobile ? { ...compactCardStyle, background: "#f3edff" } : { ...cardStyle, background: "#f3edff" }}
         >
-          <QuestionShell isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -382,8 +376,6 @@ export default function Onboarding({ onComplete }) {
               style={inputStyle}
               value={a.name}
               onChange={(e) => setA({ ...a, name: e.target.value })}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="Mein Name ist…"
             />
             <button
@@ -401,7 +393,7 @@ export default function Onboarding({ onComplete }) {
       {/* Step 3: Alter */}
       {step === 3 && (
         <div className="card" style={compactCardStyle}>
-          <QuestionShell isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -415,8 +407,6 @@ export default function Onboarding({ onComplete }) {
               type="number"
               value={a.age}
               onChange={(e) => setA({ ...a, age: e.target.value })}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="Ich bin … Jahre alt"
             />
             <button
@@ -434,7 +424,7 @@ export default function Onboarding({ onComplete }) {
       {/* Step 4: Wetter */}
       {step === 4 && (
         <div className="card" style={compactCardStyle}>
-          <QuestionShell isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -447,8 +437,6 @@ export default function Onboarding({ onComplete }) {
               style={inputStyle}
               value={a.weather}
               onChange={(e) => setA({ ...a, weather: e.target.value })}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="z. B. sonnig, bewölkt, regnerisch, stürmisch…"
             />
             <button
@@ -466,7 +454,7 @@ export default function Onboarding({ onComplete }) {
       {/* Step 5: Safe Place */}
       {step === 5 && (
         <div className="card" style={compactCardStyle}>
-          <QuestionShell variant="sit" isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell variant="sit" isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -481,8 +469,6 @@ export default function Onboarding({ onComplete }) {
               style={textAreaStyle}
               value={a.safePlace}
               onChange={(e) => setA({ ...a, safePlace: e.target.value })}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="z. B. eine Decke, ein Zimmer, ein Geruch …"
               rows={3}
             />
@@ -501,7 +487,7 @@ export default function Onboarding({ onComplete }) {
       {/* Step 6: Begleitungs-Gefühl */}
       {step === 6 && (
         <div className="card" style={compactCardStyle}>
-          <QuestionShell isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -517,8 +503,6 @@ export default function Onboarding({ onComplete }) {
               onChange={(e) =>
                 setA({ ...a, companionFeeling: e.target.value })
               }
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="z. B. ruhig, schützend, wärmend, einfach da, witzig …"
             />
             <button
@@ -536,7 +520,7 @@ export default function Onboarding({ onComplete }) {
       {/* Step 7: Wunsch-Ort */}
       {step === 7 && (
         <div className="card" style={compactCardStyle}>
-          <QuestionShell variant="sit" isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell variant="sit" isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -550,8 +534,6 @@ export default function Onboarding({ onComplete }) {
               style={inputStyle}
               value={a.wishPlace}
               onChange={(e) => setA({ ...a, wishPlace: e.target.value })}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="ans Meer… ins Bett… irgendwohin ohne Druck…"
             />
             <button
@@ -569,7 +551,7 @@ export default function Onboarding({ onComplete }) {
       {/* Step 8: Vertrautes Gefühl */}
       {step === 8 && (
         <div className="card" style={compactCardStyle}>
-          <QuestionShell variant="sit" isMobile={isMobile} isFocused={isInputFocused}>
+          <QuestionShell variant="sit" isMobile={isMobile}>
             <button className="onboardingBackLink" type="button" onClick={back}>
               &lt; Zurück
             </button>
@@ -586,8 +568,6 @@ export default function Onboarding({ onComplete }) {
               onChange={(e) =>
                 setA({ ...a, familiarFeeling: e.target.value })
               }
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
               placeholder="Das Erste, was dir einfällt…"
               rows={3}
             />
