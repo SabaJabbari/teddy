@@ -561,7 +561,6 @@ export default function App() {
         <button className='btn' onClick={toggleMusic}>
           {musicEnabled ? 'Musik stummschalten' : 'Musik einschalten'}
         </button>
-        <button className='btn' onClick={startBreathing} disabled={breathing}>1-min Atemübung</button>
         <button className='btn' onClick={resetAll}>Reset</button>
         <button className='btn btnGhost' onClick={clearChatHistory}>Chat löschen</button>
       </div>
