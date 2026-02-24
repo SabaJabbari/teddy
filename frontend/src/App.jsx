@@ -136,6 +136,10 @@ export default function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     const handleResize = () => {
+      const keyboardOpen = typeof document !== 'undefined' && document.body.classList.contains('keyboard-open')
+      const isTouchDevice = typeof window.matchMedia === 'function'
+        && window.matchMedia('(hover:none) and (pointer:coarse)').matches
+      if (isTouchDevice && keyboardOpen) return
       setIsMobile(window.innerWidth <= 900)
       setViewport({ width: window.innerWidth, height: window.innerHeight })
     }
@@ -700,7 +704,7 @@ export default function App() {
               return
             }
             if (resetPassword !== resetConfirm) {
-              setResetError('Passwoerter stimmen nicht ueberein.')
+              setResetError('Passwörter stimmen nicht überein.')
               return
             }
             setResetLoading(true)

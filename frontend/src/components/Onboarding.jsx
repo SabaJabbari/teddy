@@ -299,8 +299,8 @@ export default function Onboarding({ onComplete }) {
             />
           </div>
           <p style={{ fontSize: 15, lineHeight: 1.45, color: "#374151" }}>
-            Coco legt schon mal sein Kuschelkissen bereit und summt leise vor sich hin.
-            Moechtest du ihm ein paar sanfte Stichwoerter geben, damit er sich auf dich einstimmen kann?
+            Coco legt schon mal sein Kuscheltier bereit und summt leise vor sich hin.
+            Möchtest du ihm ein paar sanfte Stichwörter geben, damit er sich auf dich einstimmen kann?
             Ganz ohne Eile und jederzeit ueberspringbar.
           </p>
           <div className="onboardingNav" style={{ display: "flex", gap: 10 }}>
