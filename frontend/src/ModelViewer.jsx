@@ -261,6 +261,10 @@ export default function ModelViewer({
 }) {
   const [hasModel, setHasModel] = useState(true)
   const wrapRef = useRef(null)
+  const stableCanvasSizeRef = useRef({
+    width: viewport?.width ?? 1024,
+    height: viewport?.height ?? 768
+  })
   const [canvasSize, setCanvasSize] = useState({
     width: viewport?.width ?? 1024,
     height: viewport?.height ?? 768
@@ -274,7 +278,17 @@ export default function ModelViewer({
       const entry = entries[0]
       if (!entry) return
       const { width, height } = entry.contentRect
-      setCanvasSize({ width, height })
+      const next = { width, height }
+      const keyboardOpen = typeof document !== 'undefined' && document.body.classList.contains('keyboard-open')
+      const isTouchDevice = typeof window !== 'undefined'
+        && typeof window.matchMedia === 'function'
+        && window.matchMedia('(hover:none) and (pointer:coarse)').matches
+      if (isTouchDevice && keyboardOpen) {
+        setCanvasSize(stableCanvasSizeRef.current)
+        return
+      }
+      stableCanvasSizeRef.current = next
+      setCanvasSize(next)
     })
     observer.observe(el)
     return () => observer.disconnect()
@@ -325,7 +339,16 @@ export default function ModelViewer({
           )}
         </Suspense>
         <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={10} blur={2.5} far={4} />
-        <OrbitControls enableDamping={false} autoRotate={false} minDistance={3} maxDistance={14} target={[0, 1.1, 0]} />
+        <OrbitControls
+          enableDamping={false}
+          autoRotate={false}
+          enableRotate={true}
+          enableZoom={false}
+          enablePan={false}
+          minDistance={3}
+          maxDistance={14}
+          target={[0, 1.1, 0]}
+        />
       </Canvas>
     </div>
   )
