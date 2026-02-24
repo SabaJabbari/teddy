@@ -10,7 +10,7 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Coco – App',
+        name: 'Coco',
         short_name: 'Coco',
         start_url: '/',
         display: 'standalone',
