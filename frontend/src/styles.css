@@ -41,8 +41,8 @@
 .introActions .btn{flex:1;min-width:140px}
 .logline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:12px;opacity:.9}.canvasWrap{position:absolute;inset:0;height:100%;min-height:100%}
 .modelCanvas{touch-action:none}
-.avatarControls{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;background:rgba(15,23,42,0.65);padding:10px 14px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,0.35);z-index:5}
-.avatarBtn{width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:18px;line-height:1;cursor:pointer}
+.avatarControls{position:absolute;right:16px;top:16px;display:flex;align-items:center;gap:10px;background:rgba(10,16,34,0.78);padding:10px 14px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,0.35);z-index:30}
+.avatarBtn{width:36px;height:36px;border:none;border-radius:50%;background:rgba(255,255,255,0.2);color:#fff;font-size:20px;line-height:1;cursor:pointer}
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
@@ -99,7 +99,7 @@
 @media (max-width: 768px){
   .scene{padding-top:10px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
   .canvasWrap{position:relative;height:100%}
-  .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
+  .avatarControls{right:10px;top:10px;padding:8px 12px;gap:6px}
   .chat{height:clamp(180px,26vh,240px);padding:14px 16px}
   .chatHistory{font-size:13px}
   .chatRow{gap:8px}
