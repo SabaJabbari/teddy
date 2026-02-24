@@ -43,12 +43,12 @@ function TeddyFitted({
       const clampedWidth = THREE.MathUtils.clamp(viewportWidth, 320, 520)
       const widthFactor = (clampedWidth - 320) / 200
       fittedHeight = THREE.MathUtils.lerp(0.95, 1.4, widthFactor)
-      yOffset = THREE.MathUtils.lerp(0.76, 0.92, widthFactor)
+      yOffset = THREE.MathUtils.lerp(0.58, 0.72, widthFactor)
     } else {
       const clampedHeight = THREE.MathUtils.clamp(viewportHeight, 420, 820)
       const heightFactor = (clampedHeight - 420) / 400
       fittedHeight = THREE.MathUtils.lerp(1.2, 2.0, heightFactor)
-      yOffset = THREE.MathUtils.lerp(0.84, 1.02, heightFactor)
+      yOffset = THREE.MathUtils.lerp(0.66, 0.82, heightFactor)
     }
     fittedHeight *= scaleMultiplier
     const box = new THREE.Box3().setFromObject(root.current)
@@ -261,7 +261,15 @@ export default function ModelViewer({
 }) {
   const [hasModel, setHasModel] = useState(true)
   const wrapRef = useRef(null)
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof document === 'undefined') return true
+    return document.visibilityState === 'visible'
+  })
   const [canvasSize, setCanvasSize] = useState({
+    width: viewport?.width ?? 1024,
+    height: viewport?.height ?? 768
+  })
+  const stableCanvasSizeRef = useRef({
     width: viewport?.width ?? 1024,
     height: viewport?.height ?? 768
   })
@@ -274,7 +282,21 @@ export default function ModelViewer({
       const entry = entries[0]
       if (!entry) return
       const { width, height } = entry.contentRect
-      setCanvasSize({ width, height })
+      const next = { width, height }
+      const keyboardOpen = typeof document !== 'undefined' && document.body.classList.contains('keyboard-open')
+      const isTouchDevice = typeof window !== 'undefined'
+        && typeof window.matchMedia === 'function'
+        && window.matchMedia('(hover:none) and (pointer:coarse)').matches
+
+      // On mobile Safari, keyboard-open can emit resize events that make the avatar jump/zoom.
+      // While keyboard is open on touch devices, keep the last stable canvas size unchanged.
+      if (isTouchDevice && keyboardOpen) {
+        setCanvasSize(stableCanvasSizeRef.current)
+        return
+      }
+
+      stableCanvasSizeRef.current = next
+      setCanvasSize(next)
     })
     observer.observe(el)
     return () => observer.disconnect()
@@ -287,6 +309,12 @@ export default function ModelViewer({
       .catch(() => alive && setHasModel(false))
     return () => { alive = false }
   }, [modelUrl])
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const onVis = () => setIsVisible(document.visibilityState === 'visible')
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [])
 
   return (
     <div className='canvasWrap' ref={wrapRef}>
@@ -297,6 +325,7 @@ export default function ModelViewer({
         onCreated={({ gl }) => {
           gl.outputColorSpace = THREE.SRGBColorSpace
         }}
+        frameloop={isVisible ? 'always' : 'never'}
       >
         <ambientLight intensity={0.6} />
         <directionalLight
@@ -325,7 +354,16 @@ export default function ModelViewer({
           )}
         </Suspense>
         <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={10} blur={2.5} far={4} />
-        <OrbitControls enableDamping={false} autoRotate={false} minDistance={3} maxDistance={14} target={[0, 1.1, 0]} />
+        <OrbitControls
+          enableDamping={false}
+          autoRotate={false}
+          enableRotate={true}
+          enableZoom={true}
+          enablePan={false}
+          minDistance={3}
+          maxDistance={14}
+          target={[0, 1.1, 0]}
+        />
       </Canvas>
     </div>
   )
