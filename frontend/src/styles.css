@@ -50,7 +50,7 @@
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
 .avatarScaleLabel{font-size:14px;font-weight:600;color:#fff}
 .chatWrap{position:absolute;top:16px;right:16px;display:flex;justify-content:flex-end;max-width:calc(100% - 32px);z-index:4}
-.chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 20px;justify-content:center}
+.chatWrap.chatWrapMobile{position:relative;top:auto;right:auto;left:auto;margin:12px 0 calc(88px + env(safe-area-inset-bottom));justify-content:center}
 body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));justify-content:center;align-items:flex-end;z-index:60}
 .chat{position:relative;width:520px;max-width:100%;background:var(--panel);padding:18px 20px;border-radius:22px;backdrop-filter:blur(4px);display:flex;flex-direction:column;gap:14px;height:clamp(210px,30vh,300px)}
 .chatBusy{border:1px solid rgba(96,165,250,0.45)}
@@ -62,7 +62,8 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
 .chatHistory{flex:1;min-height:0;overflow-y:auto;padding-right:4px;font-size:15px;line-height:1.4}
 .chatHistory .msg{margin-bottom:8px}
 .chat::before{content:'';position:absolute;left:-18px;top:40px;width:0;height:0;border-top:16px solid transparent;border-bottom:16px solid transparent;border-right:18px solid var(--panel);filter:drop-shadow(-2px 2px 3px rgba(5,8,20,.35))}
-.chatRow input{font-size:16px}
+.chatRow{display:flex;align-items:center;gap:10px}
+.chatRow input{font-size:16px;flex:1;min-width:0}
 @media (max-width: 1200px){
   .panel{width:420px}
   .rightDock{width:360px}
@@ -111,10 +112,9 @@ body.keyboard-open .chatWrap.chatWrapMobile{position:fixed;left:0;right:0;bottom
   .scene{padding-top:16px;padding-bottom:calc(140px + env(safe-area-inset-bottom))}
   .canvasWrap{position:relative;height:100%}
   .avatarControls{right:12px;bottom:12px;padding:8px 12px;gap:6px}
-  .chat{height:clamp(200px,28vh,260px);padding:12px 14px}
+  .chat{height:auto;max-height:clamp(220px,32vh,300px);padding:12px 14px}
   .chatHistory{font-size:14px}
-.chatRow{gap:8px}
-.chatRow{flex-direction:row;align-items:center}
+.chatRow{gap:8px;flex-direction:row;align-items:center}
 .chatRow input{width:auto;flex:1;height:44px;font-size:16px;padding:10px 12px}
 .chatRow button{width:96px;height:44px}
   .scene .modelSection{height:clamp(360px,56vh,640px)}
