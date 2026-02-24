@@ -44,7 +44,6 @@
 .introActions{display:flex;gap:10px;flex-wrap:wrap}
 .introActions .btn{flex:1;min-width:140px}
 .logline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:12px;opacity:.9}.canvasWrap{position:absolute;inset:0;height:100%;min-height:100%}
-.modelCanvas{touch-action:none}
 .avatarControls{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:10px;background:rgba(15,23,42,0.65);padding:10px 14px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,0.35);z-index:5}
 .avatarBtn{width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,0.15);color:#fff;font-size:18px;line-height:1;cursor:pointer}
 .avatarBtn:hover{background:rgba(255,255,255,0.3)}
