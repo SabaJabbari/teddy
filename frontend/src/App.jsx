@@ -772,8 +772,8 @@ export default function App() {
         </p>
         <div className='introList'>
           <div><b>Chatten:</b> Schreibe, was du gerade brauchst, und Coco antwortet im gewaehlten Stil.</div>
-          <div><b>Stil anpassen:</b> Wechsel zwischen Formell, Informell, Humorvoll sowie Hintergrund und Musik.</div>
-          <div><b>Tools:</b> Starte eine 1-Min-Atemuebung oder lass dir Antworten vorlesen.</div>
+          <div><b>Stil anpassen:</b> Wechsel zwischen Formell, Informell und Humorvoll.</div>
+          <div><b>Musik & Hintergrund:</b> Du kannst beides jederzeit in den Einstellungen ändern, um die Stimmung anzupassen.</div>
         </div>
         <div className='introActions'>
           <button className='btn btnPrimary' onClick={dismissIntro}>Los geht's</button>
