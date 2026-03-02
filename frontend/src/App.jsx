@@ -680,7 +680,7 @@ export default function App() {
   const resetView = (
     <div className='authScreen'>
       <div className='authCard'>
-        <h2>Passwort zuruecksetzen</h2>
+        <h2>Passwort zurücksetzen</h2>
         <p className='small' style={{ color: '#475569' }}>
           Bitte gib dein neues Passwort ein.
         </p>
@@ -691,7 +691,7 @@ export default function App() {
             if (resetLoading) return
             setResetError('')
             if (!resetToken) {
-              setResetError('Token fehlt. Bitte pruefe den Link.')
+              setResetError('Token fehlt. Bitte prüfe den Link.')
               return
             }
             if (resetPassword.length < 6) {
@@ -699,7 +699,7 @@ export default function App() {
               return
             }
             if (resetPassword !== resetConfirm) {
-              setResetError('Passwoerter stimmen nicht ueberein.')
+              setResetError('Passwörter stimmen nicht überein.')
               return
             }
             setResetLoading(true)
@@ -733,7 +733,7 @@ export default function App() {
             />
           </label>
           <label>
-            <span>Passwort bestaetigen</span>
+            <span>Passwort bestätigen</span>
             <input
               type='password'
               value={resetConfirm}
@@ -746,7 +746,7 @@ export default function App() {
           </label>
           {resetError && <div className='authError'>{resetError}</div>}
           {resetSuccess && (
-            <div className='authSuccess'>Passwort geaendert. Du kannst dich jetzt anmelden.</div>
+            <div className='authSuccess'>Passwort geändert. Du kannst dich jetzt anmelden.</div>
           )}
           <button className='btn btnPrimary' type='submit' disabled={resetLoading || resetSuccess}>
             {resetLoading ? 'Bitte warten…' : 'Passwort speichern'}
@@ -756,7 +756,7 @@ export default function App() {
             className='btn btnGhost'
             onClick={() => { if (typeof window !== 'undefined') window.location.href = '/' }}
           >
-            Zurueck zur Anmeldung
+            Zurück zur Anmeldung
           </button>
         </form>
       </div>
@@ -771,7 +771,7 @@ export default function App() {
           Kurz und knapp: So nutzt du die App am besten.
         </p>
         <div className='introList'>
-          <div><b>Chatten:</b> Schreibe, was du gerade brauchst, und Coco antwortet im gewaehlten Stil.</div>
+          <div><b>Chatten:</b> Schreibe, was du gerade brauchst, und Coco antwortet im gewählten Stil.</div>
           <div><b>Stil anpassen:</b> Wechsel zwischen Formell, Informell und Humorvoll.</div>
           <div><b>Musik & Hintergrund:</b> Du kannst beides jederzeit in den Einstellungen ändern, um die Stimmung anzupassen.</div>
         </div>
