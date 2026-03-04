@@ -23,6 +23,12 @@ const MODEL_VARIANTS = [
   { label: 'Ruhige Begrüßung', url: '/models/teddy.glb' },
   { label: 'Energiegeladener Tanz', url: '/models/Waving.glb' },
 ]
+const BREATHING_DURATION_SECONDS = 60
+const BREATHING_STEPS = [
+  { key: 'inhale', label: 'Einatmen', hint: 'Atme ruhig durch die Nase ein.', duration: 4 },
+  { key: 'hold', label: 'Halten', hint: 'Halte die Luft für einen kurzen Moment.', duration: 2 },
+  { key: 'exhale', label: 'Ausatmen', hint: 'Atme langsam und locker wieder aus.', duration: 4 }
+]
 const rawBase = (import.meta.env.VITE_API_BASE ?? '').trim()
 const normalizedBase = rawBase ? rawBase.replace(/\/+$/, '') : ''
 const resolvedBase = (() => {
@@ -77,6 +83,9 @@ export default function App() {
   const [showProtocol, setShowProtocol] = useState(false)
   const [showSettingsPanel, setShowSettingsPanel] = useState(false)
   const [breathing, setBreathing] = useState(false)
+  const [breathingPhase, setBreathingPhase] = useState(BREATHING_STEPS[0].label)
+  const [breathingHint, setBreathingHint] = useState(BREATHING_STEPS[0].hint)
+  const [breathingSecondsLeft, setBreathingSecondsLeft] = useState(BREATHING_DURATION_SECONDS)
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.innerWidth <= 900
@@ -196,6 +205,11 @@ export default function App() {
   useEffect(() => {
     if (!ttsAvailable) setVoiceError('ElevenLabs ist nicht konfiguriert. Hinterlege API-Key & Voice-ID im Backend.')
   }, [ttsAvailable])
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
 
   const log = useCallback((event, detail = '') => {
     const entry = { ts: new Date().toISOString(), event, detail }
@@ -269,31 +283,58 @@ export default function App() {
   // Atemübung
   const breathingRef = useRef(false)
   const timerRef = useRef(null)
+  const getBreathingStep = useCallback((elapsedSeconds) => {
+    const cycleDuration = BREATHING_STEPS.reduce((sum, step) => sum + step.duration, 0)
+    const cycleSecond = elapsedSeconds % cycleDuration
+    let acc = 0
+    let activeStep = BREATHING_STEPS[0]
+    for (const step of BREATHING_STEPS) {
+      acc += step.duration
+      if (cycleSecond < acc) {
+        activeStep = step
+        break
+      }
+    }
+    return activeStep
+  }, [])
+  const updateBreathingStep = useCallback((elapsedSeconds) => {
+    const activeStep = getBreathingStep(elapsedSeconds)
+    setBreathingPhase(activeStep.label)
+    setBreathingHint(activeStep.hint)
+    return activeStep
+  }, [getBreathingStep])
+  const stopBreathing = useCallback((completed = false) => {
+    breathingRef.current = false
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+    setBreathing(false)
+    setBreathingSecondsLeft(completed ? 0 : BREATHING_DURATION_SECONDS)
+    setBreathingPhase(completed ? 'Geschafft' : BREATHING_STEPS[0].label)
+    setBreathingHint(completed ? 'Du hast die 1-minütige Atemübung abgeschlossen.' : BREATHING_STEPS[0].hint)
+    log(completed ? 'breathing_end' : 'breathing_cancel', '')
+  }, [log])
   function startBreathing() {
+    if (breathingRef.current) return
     breathingRef.current = true
     setBreathing(true)
+    setBreathingSecondsLeft(BREATHING_DURATION_SECONDS)
+    updateBreathingStep(0)
     log('breathing_start', '')
-    const phases = ['inhale','hold','exhale']
-    const textByStyle = {
-      inhale: ['Ruhig einatmen – vier Sekunden.','Tief ein! Vier Sekunden.','Einatmen – stell dir Kakao vor! Vier Sekunden.'],
-      hold:   ['Kurz halten – zwei Sekunden.','Anhalten – zwei Sekunden.','Freeze – zwei Sekunden!'],
-      exhale: ['Langsam ausatmen – vier Sekunden.','Locker aus – vier Sekunden.','Laaaangsam aus – wie eine Luftmatratze.']
-    }
-    let count = 0
-    const loop = async () => {
-      if (!breathingRef.current) return
-      const p = phases[count % 3]
-      const t = (p === 'hold') ? 2000 : 4000
-      const txt = textByStyle[p][styleIdx]
-      const ok = await speakMessage(txt)
-      if (!ok) new Audio('/assets/formal.wav').play()
-      log('breathing_phase', p)
-      count++
-      if (count < 18) timerRef.current = setTimeout(() => { loop() }, t)
-      else { setBreathing(false); breathingRef.current = false; log('breathing_end', '') }
-    }
-    if (timerRef.current) clearTimeout(timerRef.current)
-    loop()
+    let elapsedSeconds = 0
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      elapsedSeconds += 1
+      const remaining = Math.max(BREATHING_DURATION_SECONDS - elapsedSeconds, 0)
+      setBreathingSecondsLeft(remaining)
+      if (remaining === 0) {
+        stopBreathing(true)
+        return
+      }
+      const activeStep = updateBreathingStep(elapsedSeconds)
+      log('breathing_phase', activeStep.key)
+    }, 1000)
   }
 
   function resetAll() {
@@ -308,8 +349,11 @@ export default function App() {
       audio.currentTime = 0
     })
     breathingRef.current = false
-    if (timerRef.current) clearTimeout(timerRef.current)
+    if (timerRef.current) clearInterval(timerRef.current)
     setBreathing(false)
+    setBreathingSecondsLeft(BREATHING_DURATION_SECONDS)
+    setBreathingPhase(BREATHING_STEPS[0].label)
+    setBreathingHint(BREATHING_STEPS[0].hint)
     setCrisisBanner('')
     setIsWaving(true)
     setAreFeetMoving(true)
@@ -561,6 +605,9 @@ export default function App() {
         <button className='btn' onClick={toggleMusic}>
           {musicEnabled ? 'Musik stummschalten' : 'Musik einschalten'}
         </button>
+        <button className='btn' onClick={startBreathing} disabled={breathing}>
+          {breathing ? 'Atemübung läuft…' : '1-minütige Atemübung'}
+        </button>
         <button className='btn' onClick={resetAll}>Reset</button>
         <button className='btn btnGhost' onClick={clearChatHistory}>Chat löschen</button>
       </div>
@@ -781,6 +828,47 @@ export default function App() {
       </div>
     </div>
   )
+  const breathingProgress = ((BREATHING_DURATION_SECONDS - breathingSecondsLeft) / BREATHING_DURATION_SECONDS) * 100
+  const breathingOverlay = (
+    <div className='introOverlay' style={{ background: 'rgba(11, 17, 32, 0.48)', backdropFilter: 'blur(8px)' }}>
+      <div className='introCard' style={{ maxWidth: 420, textAlign: 'center' }}>
+        <h2>{breathing ? '1-minütige Atemübung' : 'Atemübung abgeschlossen'}</h2>
+        <p className='small' style={{ color: '#475569', marginBottom: 16 }}>
+          {breathingHint}
+        </p>
+        <div
+          style={{
+            width: isMobile ? 180 : 220,
+            height: isMobile ? 180 : 220,
+            margin: '0 auto 18px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95), rgba(186, 230, 253, 0.85) 45%, rgba(125, 211, 252, 0.55) 100%)',
+            boxShadow: breathing
+              ? '0 0 0 12px rgba(186, 230, 253, 0.18), 0 16px 40px rgba(14, 116, 144, 0.24)'
+              : '0 16px 40px rgba(14, 116, 144, 0.18)',
+            transform: breathingPhase === 'Einatmen' ? 'scale(1.04)' : breathingPhase === 'Ausatmen' ? 'scale(0.94)' : 'scale(1)',
+            transition: 'transform 900ms ease-in-out, box-shadow 900ms ease-in-out'
+          }}
+        />
+        <div style={{ fontSize: 28, fontWeight: 700, color: '#0f172a' }}>{breathingPhase}</div>
+        <div style={{ fontSize: 18, color: '#334155', marginTop: 4 }}>{breathingSecondsLeft}s</div>
+        <div style={{ width: '100%', height: 10, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden', marginTop: 18 }}>
+          <div style={{ width: `${Math.max(0, Math.min(100, breathingProgress))}%`, height: '100%', background: 'linear-gradient(90deg, #38bdf8, #0ea5e9)' }} />
+        </div>
+        <div className='introActions' style={{ marginTop: 18 }}>
+          {breathing ? (
+            <button className='btn btnGhost' onClick={() => stopBreathing(false)}>Atemübung beenden</button>
+          ) : (
+            <button className='btn btnPrimary' onClick={() => {
+              setBreathingSecondsLeft(BREATHING_DURATION_SECONDS)
+              setBreathingPhase(BREATHING_STEPS[0].label)
+              setBreathingHint(BREATHING_STEPS[0].hint)
+            }}>Schließen</button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   // Onboarding zuerst
   if (showOnboarding) {
@@ -829,6 +917,7 @@ export default function App() {
   return (
     <div className={`app ${bgClass}`} style={isMobile ? { minHeight: "100vh" } : undefined}>
       {showIntroScreen && introView}
+      {(breathing || breathingSecondsLeft === 0) && breathingOverlay}
       <div className='header'>
         <span>Coco</span>
         <div className='userBadge'>
